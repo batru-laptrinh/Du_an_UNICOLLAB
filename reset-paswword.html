@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNICOLLAB - Đặt Lại Mật Khẩu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; }
+        .bg-login { background-color: #f0f4f8; background-image: radial-gradient(#dbeafe 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="bg-login min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="mb-8 text-center cursor-pointer hover:scale-105 transition transform" onclick="window.location.href='index.html'">
+        <div class="text-blue-600 text-5xl font-bold mb-3"><i class="fa-brands fa-uniregistry"></i></div>
+        <h1 class="text-3xl font-extrabold text-gray-800 tracking-wider">UNICOLLAB</h1>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full relative">
+        
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-blue-100">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wide">TẠO MẬT KHẨU MỚI</h2>
+            <p class="text-sm text-gray-500 mt-2">Vui lòng xác nhận danh tính và tạo mật khẩu mới. Mật khẩu nên dài ít nhất 8 ký tự.</p>
+        </div>
+
+        <form id="resetForm" onsubmit="submitResetPassword(event)">
+            
+            <div class="relative mb-5">
+                <i class="fa-regular fa-user absolute left-5 top-3.5 text-blue-400 text-lg"></i>
+                <input id="userId" type="text" required placeholder="Xác nhận Mã SV / Tài khoản *" class="w-full pl-12 pr-4 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-full outline-none transition focus:bg-white focus:ring-1 focus:ring-blue-500 text-sm font-medium">
+            </div>
+
+            <div class="relative mb-5">
+                <i class="fa-solid fa-lock absolute left-5 top-3.5 text-blue-400 text-lg"></i>
+                <input id="newPassword" type="password" required placeholder="Nhập mật khẩu mới *" class="w-full pl-12 pr-12 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-full outline-none transition focus:bg-white focus:ring-1 focus:ring-blue-500 text-sm font-medium">
+                <i id="toggleNew" class="fa-regular fa-eye-slash absolute right-5 top-3.5 text-blue-400 cursor-pointer hover:text-blue-700 transition text-lg"></i>
+            </div>
+
+            <div class="relative mb-8">
+                <i class="fa-solid fa-shield-check absolute left-5 top-3.5 text-blue-400 text-lg"></i>
+                <input id="confirmPassword" type="password" required placeholder="Nhập lại mật khẩu mới *" class="w-full pl-12 pr-12 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-full outline-none transition focus:bg-white focus:ring-1 focus:ring-blue-500 text-sm font-medium">
+                <i id="toggleConfirm" class="fa-regular fa-eye-slash absolute right-5 top-3.5 text-blue-400 cursor-pointer hover:text-blue-700 transition text-lg"></i>
+                <p id="errorMessage" class="text-red-500 text-xs font-bold mt-2 ml-4 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Mật khẩu nhập lại không khớp!</p>
+            </div>
+
+            <button type="submit" class="w-full bg-[#2563eb] text-white font-bold text-lg py-3.5 rounded-full hover:bg-blue-700 transition shadow-md uppercase tracking-wide">
+                Cập nhật mật khẩu
+            </button>
+        </form>
+
+    </div>
+
+    <script>
+        // Tính năng con mắt ẩn/hiện mật khẩu
+        function setupToggle(toggleId, inputId) {
+            const toggleBtn = document.getElementById(toggleId);
+            const inputField = document.getElementById(inputId);
+            
+            toggleBtn.addEventListener('click', function () {
+                const type = inputField.getAttribute('type') === 'password' ? 'text' : 'password';
+                inputField.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+
+        setupToggle('toggleNew', 'newPassword');
+        setupToggle('toggleConfirm', 'confirmPassword');
+
+        // Logic xử lý Form
+        function submitResetPassword(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('userId').value;
+            const pass1 = document.getElementById('newPassword').value;
+            const pass2 = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            // Kiểm tra khớp mật khẩu
+            if (pass1 !== pass2) {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('confirmPassword').classList.add('border-red-400', 'ring-1', 'ring-red-400');
+                return;
+            } else {
+                errorMsg.classList.add('hidden');
+            }
+
+            // Nếu thành công
+            alert(`✅ Tuyệt vời! Bạn đã đổi mật khẩu thành công cho tài khoản "${userId}".\nHệ thống sẽ chuyển bạn về trang Đăng nhập.`);
+            
+            // Điều hướng về lại Cổng Đăng Nhập
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

@@ -13,11 +13,25 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
         
-        .kanban-col { min-height: 500px; }
-        .task-card { cursor: grab; transition: transform 0.2s, box-shadow 0.2s; }
-        .task-card:active { cursor: grabbing; transform: scale(1.02); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
-        .task-card.dragging { opacity: 0.5; }
-        .drag-over { background-color: #e2e8f0; border: 2px dashed #94a3b8; }
+        .kanban-col { min-height: 150px; }
+        
+        /* [ĐÃ SỬA] HIỆU ỨNG KÉO THẢ CỰC MƯỢT (UX CAO CẤP) */
+        .task-card { 
+            cursor: grab; 
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease; 
+        }
+        .task-card:active { cursor: grabbing; }
+        .task-card.dragging { 
+            opacity: 0.9; 
+            transform: rotate(3deg) scale(1.05); /* Nghiêng và phóng to */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.05); /* Đổ bóng đậm */
+            z-index: 50; 
+            border-color: #3b82f6; 
+        }
+        .drag-over { 
+            background-color: #e2e8f0 !important; 
+            border: 2px dashed #94a3b8 !important; 
+        }
         
         .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
         .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
@@ -140,87 +154,112 @@
                 </div>
             </div>
 
-            <div id="content-board" class="flex-1 flex gap-6 h-full min-w-[900px] pb-4 fade-in-section">
-                <div class="flex flex-col w-1/3 bg-gray-100/80 border border-gray-200 rounded-2xl overflow-hidden shrink-0">
-                    <div class="p-4 border-b border-gray-200 bg-gray-100 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-700 flex items-center"><span class="w-3 h-3 rounded-full bg-gray-400 mr-2"></span> Cần làm (To Do)</h3>
-                        <span class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full" id="count-todo">2</span>
+            <div id="content-board" class="flex-1 flex flex-col h-full fade-in-section">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-5 shrink-0">
+                    <div class="relative w-full sm:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="searchTaskInput" oninput="filterTasks()" placeholder="Tìm thẻ công việc (Tiêu đề, Nhãn)..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500 transition shadow-sm">
                     </div>
-                    <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-todo" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-                        
-                        <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400 group" draggable="true" ondragstart="drag(event)" id="task1">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase">Phân tích</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
-                            </div>
-                            <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Viết tài liệu đặc tả yêu cầu (SRS)</h4>
-                            <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
-                                <div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-red-400"></i> Hôm nay</div>
-                                <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition" title="Leader đang phụ trách">L</button>
-                            </div>
-                        </div>
-
-                        <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400 group" draggable="true" ondragstart="drag(event)" id="task2">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded uppercase">Thiết kế</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
-                            </div>
-                            <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Thiết kế UI/UX trang chủ Figma</h4>
-                            <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
-                                <div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> 25/04</div>
-                                <button onclick="openAssignModal(this)" class="w-6 h-6 border border-dashed border-gray-400 text-gray-500 rounded-full flex items-center justify-center font-bold text-[10px] hover:bg-gray-100 transition" title="Chưa phân công - Bấm để gán"><i class="fa-solid fa-user-plus"></i></button>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="p-3 bg-gray-100/50 border-t border-gray-200">
-                        <button onclick="openTaskModal('col-todo')" class="w-full py-2 text-sm text-gray-500 font-bold hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition shadow-sm flex items-center"><i class="fa-solid fa-filter mr-2"></i> Lọc Thẻ</button>
+                        <button class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition shadow-sm flex items-center"><i class="fa-solid fa-user-group mr-2"></i> Nhóm của tôi</button>
                     </div>
                 </div>
 
-                <div class="flex flex-col w-1/3 bg-blue-50/50 border border-blue-100 rounded-2xl overflow-hidden shrink-0">
-                    <div class="p-4 border-b border-blue-100 bg-blue-50 flex justify-between items-center">
-                        <h3 class="font-bold text-blue-800 flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Đang làm (In Progress)</h3>
-                        <span class="bg-blue-200 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full" id="count-inprogress">1</span>
-                    </div>
-                    <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-inprogress" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-                        <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500 group" draggable="true" ondragstart="drag(event)" id="task3">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded uppercase">Dev</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
+                <div class="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar items-start" id="kanbanContainer">
+                    
+                    <div class="flex flex-col w-80 bg-gray-100/80 border border-gray-200 rounded-2xl overflow-hidden shrink-0 h-full max-h-full">
+                        <div class="p-4 border-b border-gray-200 bg-gray-100 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-700 flex items-center"><span class="w-3 h-3 rounded-full bg-gray-400 mr-2"></span> Cần làm (To Do)</h3>
+                            <span class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full count-badge" id="count-col-todo">2</span>
+                        </div>
+                        <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-todo" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            
+                            <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400 group" draggable="true" ondragstart="drag(event)" id="task1">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase">Phân tích</div>
+                                    <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
+                                </div>
+                                <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Viết tài liệu đặc tả yêu cầu (SRS)</h4>
+                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
+                                    <div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-red-400"></i> Hôm nay</div>
+                                    <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition" title="Leader đang phụ trách">L</button>
+                                </div>
                             </div>
-                            <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Khởi tạo Database SQL Server</h4>
-                            <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
-                                <div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> 22/04</div>
-                                <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition">L</button>
+
+                            <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400 group" draggable="true" ondragstart="drag(event)" id="task2">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded uppercase">Thiết kế</div>
+                                    <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
+                                </div>
+                                <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Thiết kế UI/UX trang chủ Figma</h4>
+                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
+                                    <div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> 25/04</div>
+                                    <button onclick="openAssignModal(this)" class="w-6 h-6 border border-dashed border-gray-400 text-gray-500 rounded-full flex items-center justify-center font-bold text-[10px] hover:bg-gray-100 transition" title="Chưa phân công - Bấm để gán"><i class="fa-solid fa-user-plus"></i></button>
+                                </div>
                             </div>
+
+                        </div>
+                        <div class="p-3 bg-gray-100/50 border-t border-gray-200">
+                            <button onclick="openTaskModal('col-todo')" class="w-full py-2 text-sm text-gray-500 font-bold hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
                         </div>
                     </div>
-                    <div class="p-3 bg-blue-50/30 border-t border-blue-100">
-                        <button onclick="openTaskModal('col-inprogress')" class="w-full py-2 text-sm text-blue-500 font-bold hover:text-blue-700 hover:bg-blue-100 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
-                    </div>
-                </div>
 
-                <div class="flex flex-col w-1/3 bg-green-50/50 border border-green-100 rounded-2xl overflow-hidden shrink-0">
-                    <div class="p-4 border-b border-green-100 bg-green-50 flex justify-between items-center">
-                        <h3 class="font-bold text-green-800 flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span> Hoàn thành (Done)</h3>
-                        <span class="bg-green-200 text-green-800 text-xs font-bold px-2 py-0.5 rounded-full" id="count-done">1</span>
-                    </div>
-                    <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-done" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-                        <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-green-500 group opacity-70" draggable="true" ondragstart="drag(event)" id="task4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded uppercase">Hệ thống</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
-                            </div>
-                            <h4 class="font-bold text-gray-500 text-sm mb-2 line-through">Lập nhóm trên UNICOLLAB</h4>
-                            <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
-                                <div class="flex items-center text-xs text-green-600 font-bold"><i class="fa-solid fa-check-double mr-1"></i> Xong</div>
-                                <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition">L</button>
+                    <div class="flex flex-col w-80 bg-blue-50/50 border border-blue-100 rounded-2xl overflow-hidden shrink-0 h-full max-h-full">
+                        <div class="p-4 border-b border-blue-100 bg-blue-50 flex justify-between items-center">
+                            <h3 class="font-bold text-blue-800 flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Đang làm (In Progress)</h3>
+                            <span class="bg-blue-200 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full count-badge" id="count-col-inprogress">1</span>
+                        </div>
+                        <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-inprogress" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500 group" draggable="true" ondragstart="drag(event)" id="task3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded uppercase">Dev</div>
+                                    <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
+                                </div>
+                                <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Khởi tạo Database SQL Server</h4>
+                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
+                                    <div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> 22/04</div>
+                                    <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition">L</button>
+                                </div>
                             </div>
                         </div>
+                        <div class="p-3 bg-blue-50/30 border-t border-blue-100">
+                            <button onclick="openTaskModal('col-inprogress')" class="w-full py-2 text-sm text-blue-500 font-bold hover:text-blue-700 hover:bg-blue-100 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
+                        </div>
                     </div>
-                </div>
 
+                    <div class="flex flex-col w-80 bg-green-50/50 border border-green-100 rounded-2xl overflow-hidden shrink-0 h-full max-h-full">
+                        <div class="p-4 border-b border-green-100 bg-green-50 flex justify-between items-center">
+                            <h3 class="font-bold text-green-800 flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span> Hoàn thành (Done)</h3>
+                            <span class="bg-green-200 text-green-800 text-xs font-bold px-2 py-0.5 rounded-full count-badge" id="count-col-done">1</span>
+                        </div>
+                        <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-done" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-green-500 group opacity-70" draggable="true" ondragstart="drag(event)" id="task4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded uppercase">Hệ thống</div>
+                                    <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
+                                </div>
+                                <h4 class="font-bold text-gray-500 text-sm mb-2 line-through">Lập nhóm trên UNICOLLAB</h4>
+                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
+                                    <div class="flex items-center text-xs text-green-600 font-bold"><i class="fa-solid fa-check-double mr-1"></i> Xong</div>
+                                    <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition">L</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-green-50/30 border-t border-green-100">
+                            <button onclick="openTaskModal('col-done')" class="w-full py-2 text-sm text-green-600 font-bold hover:text-green-700 hover:bg-green-100 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
+                        </div>
+                    </div>
+
+                    <div id="addColumnBtn" onclick="addNewColumn()" class="flex flex-col w-80 min-w-[320px] bg-gray-50/40 border-2 border-dashed border-gray-300 rounded-2xl items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition group h-24 shrink-0 mt-0 shadow-sm">
+                        <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 group-hover:bg-white mb-2 transition transform group-hover:scale-110">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <span class="font-bold text-sm text-gray-500 group-hover:text-blue-600 transition">Thêm cột trạng thái mới</span>
+                    </div>
+
+                </div>
             </div>
 
             <div id="content-candidates" class="hidden flex-1 h-full overflow-y-auto custom-scrollbar bg-white rounded-2xl shadow-sm border border-gray-200 p-6 fade-in-section">
@@ -333,6 +372,7 @@
                             <option value="Thiết kế">Thiết kế</option>
                             <option value="Dev">Dev (Code)</option>
                             <option value="Test">Test (Kiểm thử)</option>
+                            <option value="Review">Review (Kiểm duyệt)</option>
                         </select>
                         <input type="text" id="taskDeadline" placeholder="Hạn (VD: 25/04)" class="w-1/2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:bg-white focus:ring-1 focus:ring-blue-500">
                     </div>
@@ -395,8 +435,7 @@
                     <button onclick="closeChatModal()" class="w-8 h-8 bg-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#f8fafc] custom-scrollbar" id="chatMessagesArea">
-                    </div>
+                <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#f8fafc] custom-scrollbar" id="chatMessagesArea"></div>
 
                 <div class="p-3 md:p-4 bg-white border-t border-gray-200 shrink-0">
                     <form onsubmit="sendChatMessage(event)" class="flex items-end gap-2 bg-gray-100 rounded-3xl p-1.5 border border-gray-200 focus-within:ring-1 focus-within:ring-blue-500 focus-within:bg-white transition">
@@ -420,12 +459,18 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('userProfileData');
-            if(savedUser) {
-                const userData = JSON.parse(savedUser);
-                document.getElementById('leaderAvatar').innerText = userData.name.charAt(0).toUpperCase();
-                teamMembers[0].name = userData.name + " (Leader)";
-                teamMembers[0].initial = userData.name.charAt(0).toUpperCase();
+            if(!savedUser) { window.location.href = 'index.html'; return; }
+            
+            const userData = JSON.parse(savedUser);
+            if(userData.role === 'teacher') {
+                alert('⚠️ KHU VỰC SINH VIÊN: Giảng viên không có quyền truy cập trang này!');
+                window.location.href = 'dashboard.html';
+                return;
             }
+
+            document.getElementById('leaderAvatar').innerText = userData.name.charAt(0).toUpperCase();
+            teamMembers[0].name = userData.name + " (Leader)";
+            teamMembers[0].initial = userData.name.charAt(0).toUpperCase();
 
             const leaderData = localStorage.getItem('leaderProjectData');
             if(leaderData) {
@@ -434,6 +479,7 @@
                 document.getElementById('settingProjName').value = projData.title;
                 document.getElementById('projCategory').innerText = projData.category;
                 
+                document.getElementById('chatHeaderTitle').innerText = "Team: " + projData.title;
                 document.getElementById('chatGroupSidebarName').innerText = projData.title;
                 
                 const dummyDesc = "Đây là dự án liên ngành rèn nghề thực tế. Team đang cần sự nhiệt huyết để hoàn thành đúng deadline.";
@@ -445,6 +491,7 @@
                 document.getElementById('projTitle').innerText = "Hệ thống Quản lý Đồ án UNICOLLAB";
                 document.getElementById('settingProjName').value = "Hệ thống Quản lý Đồ án UNICOLLAB";
                 document.getElementById('projCategory').innerText = "DỰ ÁN MẪU";
+                document.getElementById('chatHeaderTitle').innerText = "Team: Dự án Mẫu";
                 document.getElementById('chatGroupSidebarName').innerText = "Dự án Mẫu";
             }
         });
@@ -476,28 +523,124 @@
             else activeContent.classList.replace('hidden', 'block');
         }
 
-        let draggedItem = null;
-        function drag(event) { draggedItem = event.target; event.dataTransfer.setData("text/plain", event.target.id); setTimeout(() => { event.target.classList.add('dragging'); }, 0); }
-        function allowDrop(event) { event.preventDefault(); const col = event.target.closest('.kanban-col'); if(col) col.classList.add('drag-over'); }
-        function dragLeave(event) { const col = event.target.closest('.kanban-col'); if(col) col.classList.remove('drag-over'); }
-        function drop(event) {
-            event.preventDefault(); const col = event.target.closest('.kanban-col');
-            if(col && draggedItem) {
-                col.classList.remove('drag-over'); draggedItem.classList.remove('dragging');
-                draggedItem.classList.remove('border-l-gray-400', 'border-l-blue-500', 'border-l-green-500', 'opacity-70');
-                if (col.id === 'col-todo') draggedItem.classList.add('border-l-gray-400');
-                if (col.id === 'col-inprogress') draggedItem.classList.add('border-l-blue-500');
-                if (col.id === 'col-done') draggedItem.classList.add('border-l-green-500', 'opacity-70');
-                col.appendChild(draggedItem); updateCounts();
+        // ==========================================
+        // TÌM KIẾM VÀ LỌC THẺ KANBAN (MỚI)
+        // ==========================================
+        function filterTasks() {
+            const query = document.getElementById('searchTaskInput').value.toLowerCase().trim();
+            const allCards = document.querySelectorAll('.task-card');
+            
+            allCards.forEach(card => {
+                const textContent = card.innerText.toLowerCase();
+                if(textContent.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            updateCounts();
+        }
+
+        // ==========================================
+        // THÊM CỘT TÙY BIẾN KANBAN (MỚI)
+        // ==========================================
+        function addNewColumn() {
+            const colName = prompt("Nhập tên Cột trạng thái mới (VD: Kiểm duyệt, Testing, Re-work):");
+            if(colName && colName.trim() !== '') {
+                const container = document.getElementById('kanbanContainer');
+                const colId = 'col-' + Math.floor(Math.random() * 1000);
+                
+                const newCol = document.createElement('div');
+                newCol.className = "flex flex-col w-80 bg-indigo-50/50 border border-indigo-100 rounded-2xl overflow-hidden shrink-0 h-full max-h-full fade-in-section";
+                newCol.innerHTML = `
+                    <div class="p-4 border-b border-indigo-100 bg-indigo-50 flex justify-between items-center">
+                        <h3 class="font-bold text-indigo-800 flex items-center"><span class="w-3 h-3 rounded-full bg-indigo-500 mr-2"></span> ${colName}</h3>
+                        <span class="bg-indigo-200 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full count-badge" id="count-${colId}">0</span>
+                    </div>
+                    <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="${colId}" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                        </div>
+                    <div class="p-3 bg-indigo-50/30 border-t border-indigo-100">
+                        <button onclick="openTaskModal('${colId}')" class="w-full py-2 text-sm text-indigo-500 font-bold hover:text-indigo-700 hover:bg-indigo-100 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
+                    </div>
+                `;
+                
+                // Chèn cột mới vào trước cái nút "Thêm cột"
+                container.insertBefore(newCol, document.getElementById('addColumnBtn'));
             }
         }
-        function updateCounts() {
-            document.getElementById('count-todo').innerText = document.getElementById('col-todo').children.length;
-            document.getElementById('count-inprogress').innerText = document.getElementById('col-inprogress').children.length;
-            document.getElementById('count-done').innerText = document.getElementById('col-done').children.length;
-        }
-        document.addEventListener('dragend', (e) => { if(draggedItem) draggedItem.classList.remove('dragging'); });
 
+        // ==========================================
+        // LOGIC KÉO THẢ KANBAN (ĐÃ NÂNG CẤP UX)
+        // ==========================================
+        let draggedItem = null;
+        let originalBorderClass = '';
+
+        function drag(event) { 
+            draggedItem = event.target; 
+            event.dataTransfer.setData("text/plain", event.target.id); 
+            // Lưu lại viền cũ để khi kéo xong trả lại
+            const classes = Array.from(draggedItem.classList);
+            originalBorderClass = classes.find(c => c.startsWith('border-l-') && c !== 'border-l-4');
+            
+            setTimeout(() => { draggedItem.classList.add('dragging'); }, 0); 
+        }
+
+        function allowDrop(event) { 
+            event.preventDefault(); 
+            const col = event.target.closest('.kanban-col'); 
+            if(col) col.classList.add('drag-over'); 
+        }
+
+        function dragLeave(event) { 
+            const col = event.target.closest('.kanban-col'); 
+            if(col) col.classList.remove('drag-over'); 
+        }
+
+        function drop(event) {
+            event.preventDefault(); 
+            const col = event.target.closest('.kanban-col');
+            if(col && draggedItem) {
+                col.classList.remove('drag-over'); 
+                draggedItem.classList.remove('dragging');
+                
+                // Xóa màu viền cũ
+                draggedItem.classList.remove('border-l-gray-400', 'border-l-blue-500', 'border-l-green-500', 'border-l-indigo-500', 'opacity-70');
+                
+                // Đổi màu viền theo cột mới
+                if (col.id === 'col-todo') draggedItem.classList.add('border-l-gray-400');
+                else if (col.id === 'col-inprogress') draggedItem.classList.add('border-l-blue-500');
+                else if (col.id === 'col-done') draggedItem.classList.add('border-l-green-500', 'opacity-70');
+                else draggedItem.classList.add('border-l-indigo-500'); // Cho cột custom
+                
+                col.appendChild(draggedItem); 
+                updateCounts();
+            }
+        }
+
+        function updateCounts() {
+            // Cập nhật số đếm động cho tất cả các cột
+            document.querySelectorAll('.kanban-col').forEach(col => {
+                const countBadge = col.parentElement.querySelector('.count-badge');
+                if(countBadge) {
+                    // Chỉ đếm các thẻ đang hiển thị (phục vụ bộ lọc)
+                    let visibleCards = 0;
+                    col.querySelectorAll('.task-card').forEach(card => {
+                        if(card.style.display !== 'none') visibleCards++;
+                    });
+                    countBadge.innerText = visibleCards;
+                }
+            });
+        }
+        
+        document.addEventListener('dragend', (e) => { 
+            if(draggedItem) {
+                draggedItem.classList.remove('dragging'); 
+            }
+        });
+
+        // ==========================================
+        // CÁC LOGIC CÒN LẠI (THÊM TASK, ỨNG VIÊN, CHAT...)
+        // ==========================================
         function openTaskModal(colId) {
             currentTargetCol = colId;
             document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex');
@@ -508,8 +651,13 @@
             event.preventDefault();
             const title = document.getElementById('taskTitle').value; const tag = document.getElementById('taskTag').value;
             const deadline = document.getElementById('taskDeadline').value || "Chưa định"; const newId = 'task' + Math.floor(Math.random() * 1000);
-            let tagColor = "blue"; if(tag === "Phân tích") tagColor = "indigo"; if(tag === "Thiết kế") tagColor = "purple"; if(tag === "Dev") tagColor = "teal"; if(tag === "Test") tagColor = "orange";
-            let borderColor = "border-l-gray-400"; if(currentTargetCol === "col-inprogress") borderColor = "border-l-blue-500"; if(currentTargetCol === "col-done") borderColor = "border-l-green-500 opacity-70";
+            
+            let tagColor = "blue"; if(tag === "Phân tích") tagColor = "indigo"; if(tag === "Thiết kế") tagColor = "purple"; if(tag === "Dev") tagColor = "teal"; if(tag === "Test") tagColor = "orange"; if(tag === "Review") tagColor = "pink";
+            
+            let borderColor = "border-l-gray-400"; 
+            if(currentTargetCol === "col-inprogress") borderColor = "border-l-blue-500"; 
+            else if(currentTargetCol === "col-done") borderColor = "border-l-green-500 opacity-70";
+            else if(currentTargetCol !== "col-todo") borderColor = "border-l-indigo-500";
 
             const newTask = document.createElement('div');
             newTask.className = `task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 ${borderColor} group`;
@@ -638,7 +786,6 @@
         const chatMessagesArea = document.getElementById('chatMessagesArea');
         const chatInput = document.getElementById('chatInputMessage');
 
-        // Biến lưu trạng thái phòng đang chat và lịch sử
         let currentChatRoom = 'team';
         const chatData = {
             team: `
@@ -668,18 +815,15 @@
         function switchChatRoom(room) {
             currentChatRoom = room;
             
-            // Xóa hiệu ứng Active ở tất cả Tab
             document.querySelectorAll('.chat-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-50', 'border-l-blue-600');
                 tab.classList.add('hover:bg-gray-100', 'border-transparent');
             });
             
-            // Thêm hiệu ứng Active vào Tab đang chọn
             const activeTab = document.getElementById('chat-tab-' + room);
             activeTab.classList.remove('hover:bg-gray-100', 'border-transparent');
             activeTab.classList.add('bg-blue-50', 'border-l-blue-600');
             
-            // Đổi Header của khung Chat bên phải
             const headerTitle = document.getElementById('chatHeaderTitle');
             const headerIcon = document.getElementById('chatHeaderIcon');
             const headerStatus = document.getElementById('chatHeaderStatus');
@@ -698,7 +842,6 @@
                 headerStatus.className = "text-xs text-gray-400 font-bold flex items-center mt-0.5";
             }
             
-            // Đổ lịch sử tin nhắn của phòng đó ra
             chatMessagesArea.innerHTML = chatData[room];
             chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
             chatInput.focus();
@@ -708,13 +851,12 @@
             document.body.classList.add('modal-active');
             chatModal.classList.remove('hidden');
             chatModal.classList.add('flex');
-            
-            // Gọi hàm mở tab Team mặc định
             switchChatRoom('team');
 
             setTimeout(() => { 
                 chatContent.classList.remove('scale-95', 'opacity-0'); 
                 chatContent.classList.add('scale-100', 'opacity-100'); 
+                chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
             }, 10);
         }
 
@@ -746,11 +888,8 @@
             `;
 
             chatMessagesArea.insertAdjacentHTML('beforeend', newMsgHTML);
-            
-            // Lưu lại lịch sử để khi chuyển qua lại không bị mất
             chatData[currentChatRoom] = chatMessagesArea.innerHTML; 
             
-            // Cập nhật dòng text nhỏ nhỏ ở Sidebar
             if(currentChatRoom === 'team') {
                 document.getElementById('chatGroupPreview').innerHTML = `<span class="text-gray-800 font-bold">Bạn:</span> ` + message;
             } else {

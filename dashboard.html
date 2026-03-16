@@ -20,6 +20,8 @@
         .stat-card.active-filter { ring: 2px; ring-color: #3b82f6; border-color: #3b82f6; background-color: #f8fafc; }
         
         .modal-active { overflow: hidden; }
+        th.sortable { cursor: pointer; transition: background-color 0.2s; }
+        th.sortable:hover { background-color: #f1f5f9; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden bg-gray-50">
@@ -87,7 +89,7 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8 relative">
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8 relative pb-28">
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 fade-in gap-4">
                 <div>
@@ -113,7 +115,6 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in" style="animation-delay: 0.1s;">
-                
                 <div onclick="filterTableByStatus('all')" id="card-all" class="stat-card active-filter bg-white rounded-2xl p-6 border border-blue-500 shadow-sm relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
                     <div class="flex justify-between items-start relative z-10">
@@ -168,11 +169,11 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
-                                <th class="p-4 font-bold w-1/3">Tên Dự án / Đề tài</th>
-                                <th class="p-4 font-bold">Trưởng nhóm</th>
-                                <th class="p-4 font-bold">Lĩnh vực</th>
-                                <th class="p-4 font-bold text-center">Trạng thái</th>
-                                <th class="p-4 font-bold text-center w-56">Quản lý / Thao tác</th>
+                                <th class="p-4 font-bold w-1/3 sortable hover:text-blue-600" onclick="handleSort('title')">Tên Dự án / Đề tài <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                                <th class="p-4 font-bold sortable hover:text-blue-600" onclick="handleSort('leaderName')">Nhóm & Thành viên <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                                <th class="p-4 font-bold sortable hover:text-blue-600" onclick="handleSort('category')">Lĩnh vực <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                                <th class="p-4 font-bold text-center sortable hover:text-blue-600" onclick="handleSort('status')">Trạng thái <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
+                                <th class="p-4 font-bold text-center w-72">Quản lý / Thao tác</th> 
                             </tr>
                         </thead>
                         <tbody id="projectTableBody" class="text-sm text-gray-700 divide-y divide-gray-100">
@@ -180,13 +181,10 @@
                     </table>
                 </div>
                 
-                <div class="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
-                    <p>Hiển thị <span class="font-bold text-gray-800" id="displayCountText">0</span> dự án</p>
-                    <div class="flex space-x-1">
-                        <button class="px-3 py-1 border border-gray-200 rounded hover:bg-gray-200 transition cursor-not-allowed text-gray-400" disabled>Trước</button>
-                        <button class="px-3 py-1 border border-blue-500 bg-blue-50 text-blue-600 font-bold rounded">1</button>
-                        <button class="px-3 py-1 border border-gray-200 rounded hover:bg-gray-200 transition text-gray-600">Tiếp</button>
-                    </div>
+                <div class="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between text-sm text-gray-500" id="paginationContainer">
+                    <p>Đang hiển thị <span class="font-bold text-gray-800" id="pageInfoText">0-0</span> trong tổng số <span class="font-bold text-gray-800" id="displayCountText">0</span> dự án</p>
+                    <div class="flex space-x-2" id="paginationButtons">
+                        </div>
                 </div>
             </div>
 
@@ -201,7 +199,6 @@
     <div id="approveModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative transition-all duration-300 scale-95 opacity-0 p-8 border-t-8 border-blue-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <button onclick="closeApproveModal()" class="absolute top-5 right-5 w-8 h-8 bg-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full flex items-center justify-center transition z-10"><i class="fa-solid fa-xmark"></i></button>
-            
             <div class="mb-6 pr-8">
                 <span id="modalCategory" class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase mb-3 border border-blue-200">Lĩnh vực</span>
                 <h2 id="modalTitle" class="text-2xl font-extrabold text-gray-800 leading-tight">Tên dự án</h2>
@@ -209,18 +206,15 @@
                     <i class="fa-solid fa-crown text-orange-500 mr-2"></i> Trưởng nhóm: <strong class="text-gray-800 ml-1" id="modalLeader">Nguyễn Văn A</strong>
                 </div>
             </div>
-
             <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 mb-6">
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Mô tả tóm tắt</h4>
                 <p id="modalDesc" class="text-gray-700 text-sm leading-relaxed">Mô tả dự án sẽ hiển thị ở đây...</p>
             </div>
-
             <div class="mb-8">
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Yêu cầu nhân sự & Kỹ năng</h4>
                 <div id="modalRoles" class="flex flex-wrap gap-2 mb-3"></div>
                 <div id="modalSkills" class="flex flex-wrap gap-2 pt-3 border-t border-dashed border-gray-200"></div>
             </div>
-
             <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100" id="modalActionButtons"></div>
         </div>
     </div>
@@ -229,18 +223,15 @@
         <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative p-8 border-t-8 border-purple-500 scale-95 opacity-0 transition-all duration-300" id="gradeContent">
             <h2 class="text-xl font-extrabold text-gray-800 mb-2">Chấm điểm Dự án</h2>
             <p class="text-sm text-gray-500 mb-6 line-clamp-1" id="gradeProjectName">Tên dự án...</p>
-            
             <form onsubmit="submitGrade(event)">
                 <div class="mb-5">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Điểm tổng kết (Hệ 10) *</label>
                     <input type="number" id="gradeScore" min="0" max="10" step="0.5" required placeholder="Ví dụ: 8.5" class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-lg font-bold text-center outline-none focus:bg-white focus:ring-2 focus:ring-purple-500 transition">
                 </div>
-                
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Nhận xét của Giảng viên</label>
                     <textarea id="gradeComment" rows="4" placeholder="Nhập đánh giá về mức độ hoàn thành, thái độ làm việc của nhóm..." class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-1 focus:ring-purple-500 transition resize-none"></textarea>
                 </div>
-                
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeGradeModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition text-sm">Hủy</button>
                     <button type="submit" class="px-6 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition text-sm shadow-md"><i class="fa-solid fa-check-double mr-2"></i> Lưu điểm & Hoàn thành</button>
@@ -251,7 +242,6 @@
 
     <div id="chatModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-2 sm:p-5">
         <div class="bg-white rounded-2xl w-full max-w-5xl h-[85vh] sm:h-[80vh] shadow-2xl flex overflow-hidden relative transition-all duration-300 scale-95 opacity-0" id="chatContent">
-            
             <div class="w-20 md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col shrink-0">
                 <div class="p-4 border-b border-gray-200 hidden md:block bg-white">
                     <h2 class="text-xl font-extrabold text-gray-800">Liên hệ Nhóm</h2>
@@ -260,9 +250,7 @@
                         <input type="text" placeholder="Tìm kiếm nhóm..." class="w-full pl-10 pr-3 py-2.5 bg-gray-100 border-none rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition">
                     </div>
                 </div>
-                
-                <div class="flex-1 overflow-y-auto custom-scrollbar" id="chatListSidebar">
-                    </div>
+                <div class="flex-1 overflow-y-auto custom-scrollbar" id="chatListSidebar"></div>
             </div>
 
             <div class="flex-1 flex flex-col bg-white h-full relative" id="chatBoxContainer">
@@ -284,8 +272,7 @@
                         <button onclick="closeChatModal()" class="w-8 h-8 bg-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
 
-                    <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#f8fafc] custom-scrollbar" id="chatMessagesArea">
-                        </div>
+                    <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#f8fafc] custom-scrollbar" id="chatMessagesArea"></div>
 
                     <div class="p-3 md:p-4 bg-white border-t border-gray-200 shrink-0">
                         <form onsubmit="sendChatMessage(event)" class="flex items-end gap-2 bg-gray-100 rounded-3xl p-1.5 border border-gray-200 focus-within:ring-1 focus-within:ring-blue-500 focus-within:bg-white transition">
@@ -296,7 +283,6 @@
                     </div>
                 </div>
             </div>
-            
         </div>
     </div>
 
@@ -304,20 +290,25 @@
         let allProjects = []; 
         let currentReviewingProject = null;
         let currentReviewingIndex = null;
+        
+        // Filter & Sort & Pagination Variables
         let currentFilter = 'all'; 
+        let sortCol = 'newest';
+        let sortAsc = true;
+        let currentPage = 1;
+        const itemsPerPage = 5; // Số dự án hiển thị trên 1 trang
 
+        // DỮ LIỆU MẪU MỚI (Đã thêm thuộc tính currentMembers để test Avatar, xóa lỗi chính tả, bổ sung thêm dữ liệu để test phân trang)
         const defaultProjects = [
             {
-                title: "Website Thương mại đồ thủ công",
-                category: "Thiết kế Web", 
-                roles: [{ role: 'Designer', count: 2 }, { role: 'Frontend', count: 1 }], 
-                deadline: "25/04",
-                description: "Tìm kiếm đồng đội Frontend và UI/UX để lên giao diện web chuẩn Responsive bán đồ handmade.",
-                skills: ["HTML/CSS", "Bootstrap", "Figma"],
-                leaderName: "Trần Hữu Nam",
-                status: "pending",
-                progress: 0,
-                grade: null
+                title: "App Đặt sân cầu lông & Quản lý",
+                category: "Công nghệ & Kinh tế",
+                roles: [{ role: 'Backend C#', count: 1 }, { role: 'BA', count: 1 }], 
+                deadline: "20/04",
+                description: "Dự án xây dựng phần mềm đặt sân, tính tiền tự động.",
+                skills: ["C#", "SQL Server"],
+                leaderName: "Nguyễn Văn A",
+                status: "pending", currentMembers: 1, slotsNeeded: 3, progress: 0, grade: null
             },
             {
                 title: "Chiến dịch Truyền thông Mùa hè Xanh",
@@ -327,32 +318,64 @@
                 description: "Thực thi chiến dịch truyền thông đa kênh cho CLB tình nguyện.",
                 skills: ["Marketing", "Content Writing"],
                 leaderName: "Lê Ngọc Hân",
-                status: "active",
-                progress: 85, 
-                grade: null
+                status: "active", currentMembers: 3, slotsNeeded: 4, progress: 65, grade: null
             },
             {
-                title: "App Đặt sân cầu lông & Quản lý",
-                category: "Công nghệ & Kinh tế",
-                roles: [{ role: 'Backend C#', count: 1 }, { role: 'BA', count: 1 }], 
-                deadline: "20/04",
-                description: "Dự án xây dựng phần mềm đặt sân, tính tiền tự động.",
-                skills: ["C#", "SQL Server"],
-                leaderName: "Nguyễn Văn A",
-                status: "completed",
-                progress: 100,
-                grade: 9.5
+                title: "Website Thương mại đồ thủ công",
+                category: "Thiết kế Web", 
+                roles: [{ role: 'Designer', count: 2 }, { role: 'Frontend', count: 1 }], 
+                deadline: "25/04",
+                description: "Thiết kế và lập trình Frontend cho trang web bán đồ Handmade.",
+                skills: ["HTML/CSS", "Bootstrap", "Figma"],
+                leaderName: "Trần Hữu Nam",
+                status: "active", currentMembers: 4, slotsNeeded: 4, progress: 40, grade: null
+            },
+            {
+                title: "Hệ thống AI nhận diện biển số xe",
+                category: "Công nghệ thông tin", 
+                roles: [{ role: 'AI Engineer', count: 2 }, { role: 'Backend', count: 1 }], 
+                deadline: "10/05",
+                description: "Xây dựng mô hình AI nhận diện biển số xe tại bãi đỗ xe thông minh.",
+                skills: ["Python", "OpenCV", "TensorFlow"],
+                leaderName: "Phạm Tuấn Anh",
+                status: "pending", currentMembers: 2, slotsNeeded: 4, progress: 0, grade: null
+            },
+            {
+                title: "Ứng dụng Quản lý tài chính cá nhân",
+                category: "Thiết kế Web & Mobile", 
+                roles: [{ role: 'Flutter Dev', count: 2 }, { role: 'UI/UX', count: 1 }], 
+                deadline: "15/06",
+                description: "Làm app mobile quản lý chi tiêu cá nhân bằng Flutter.",
+                skills: ["Flutter", "Dart", "Firebase"],
+                leaderName: "Vũ Phương Thảo",
+                status: "completed", currentMembers: 4, slotsNeeded: 4, progress: 100, grade: 8.5
+            },
+            {
+                title: "Mô hình Nông nghiệp thông minh IoT",
+                category: "Tự động hóa", 
+                roles: [{ role: 'IoT Dev', count: 2 }, { role: 'Hardware', count: 1 }], 
+                deadline: "30/05",
+                description: "Thiết kế hệ thống tưới cây tự động dùng ESP32 và cảm biến.",
+                skills: ["C++", "Arduino", "ESP32"],
+                leaderName: "Bùi Quốc Cường",
+                status: "active", currentMembers: 5, slotsNeeded: 5, progress: 90, grade: null
             }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('userProfileData');
-            if(savedUser) {
-                const userData = JSON.parse(savedUser);
-                document.getElementById('teacherName').innerText = userData.name;
-                document.getElementById('teacherAvatar').innerText = userData.name.charAt(0).toUpperCase();
+            if(!savedUser) { window.location.href = 'index.html'; return; }
+            const userData = JSON.parse(savedUser);
+            if(userData.role === 'student') {
+                alert('⚠️ KHU VỰC GIẢNG VIÊN: Sinh viên không có quyền truy cập Không gian quản lý!');
+                window.location.href = 'matching.html';
+                return;
             }
 
+            document.getElementById('teacherName').innerText = userData.name;
+            document.getElementById('teacherAvatar').innerText = userData.name.charAt(0).toUpperCase();
+
+            // Load các dự án do Sinh viên thực sự tạo từ localStorage
             const savedCustomProjects = localStorage.getItem('customProjectsData');
             let customProjects = [];
             if(savedCustomProjects) {
@@ -361,16 +384,28 @@
                     ...p, 
                     status: p.status || 'pending',
                     progress: p.progress || 0,
-                    grade: p.grade || null
+                    grade: p.grade || null,
+                    currentMembers: p.currentMembers || 1 // Mặc định ít nhất có 1 Leader
                 }));
             }
 
+            // Gộp data thật và data mẫu
             allProjects = [...customProjects, ...defaultProjects];
             
             updateDashboardStats();
             renderTable();
         });
 
+        function clearTestData() {
+            if(confirm('Bạn có chắc chắn muốn Đăng xuất hệ thống Giảng viên?')) {
+                localStorage.removeItem('userProfileData');
+                window.location.href = "index.html"; 
+            }
+        }
+
+        // ==========================================
+        // CÁC HÀM XỬ LÝ LỌC, SẮP XẾP VÀ PHÂN TRANG
+        // ==========================================
         function updateDashboardStats() {
             document.getElementById('statTotalProj').innerText = allProjects.length;
             document.getElementById('statPending').innerText = allProjects.filter(p => p.status === 'pending').length;
@@ -380,7 +415,7 @@
 
         function filterTableByStatus(status) {
             currentFilter = status;
-            
+            currentPage = 1; // Khi lọc thì reset về trang 1
             ['all', 'pending', 'active', 'completed'].forEach(s => {
                 const card = document.getElementById('card-' + s);
                 if(s === status) {
@@ -395,62 +430,117 @@
         }
 
         function filterTableBySearch() {
+            currentPage = 1;
             renderTable(document.getElementById('searchProject').value);
+        }
+
+        function handleSort(col) {
+            if(sortCol === col) sortAsc = !sortAsc;
+            else { sortCol = col; sortAsc = true; }
+            currentPage = 1; // Khi sắp xếp reset về trang 1
+            renderTable();
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderTable();
         }
 
         function renderTable(searchKeyword = '') {
             const tbody = document.getElementById('projectTableBody');
             tbody.innerHTML = '';
 
+            // 1. Logic Lọc (Filter)
             let filteredProjects = allProjects;
-            
             if(currentFilter !== 'all') {
                 filteredProjects = filteredProjects.filter(p => p.status === currentFilter);
             }
-            if(searchKeyword) {
-                const keyword = searchKeyword.toLowerCase();
+            if(searchKeyword || document.getElementById('searchProject').value) {
+                const keyword = (searchKeyword || document.getElementById('searchProject').value).toLowerCase();
                 filteredProjects = filteredProjects.filter(p => p.title.toLowerCase().includes(keyword) || p.leaderName.toLowerCase().includes(keyword));
+            }
+
+            // 2. Logic Sắp xếp (Sort)
+            if(sortCol !== 'newest') {
+                filteredProjects.sort((a, b) => {
+                    let valA = a[sortCol] ? a[sortCol].toString().toLowerCase() : '';
+                    let valB = b[sortCol] ? b[sortCol].toString().toLowerCase() : '';
+                    if(valA < valB) return sortAsc ? -1 : 1;
+                    if(valA > valB) return sortAsc ? 1 : -1;
+                    return 0;
+                });
             }
 
             document.getElementById('displayCountText').innerText = filteredProjects.length;
 
             if (filteredProjects.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-500 italic">Không có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>`;
+                document.getElementById('pageInfoText').innerText = '0-0';
+                document.getElementById('paginationButtons').innerHTML = '';
                 return;
             }
 
-            filteredProjects.forEach((p) => {
-                // Lấy đúng index gốc
+            // 3. Logic Phân trang (Pagination)
+            const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+            if(currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+            if(currentPage === 0) currentPage = 1;
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const paginatedProjects = filteredProjects.slice(startIdx, endIdx);
+
+            document.getElementById('pageInfoText').innerText = `${startIdx + 1}-${Math.min(endIdx, filteredProjects.length)}`;
+            renderPaginationUI(totalPages);
+
+            // 4. Render Row
+            paginatedProjects.forEach((p) => {
                 const realIndex = allProjects.findIndex(proj => proj.title === p.title);
 
                 let statusBadge = '';
                 let actionHtml = '';
 
+                // [ĐÃ SỬA] Tạo giao diện Avatar xếp chồng (Stacked Avatars)
+                let memberAvatarsHtml = `<div class="flex -space-x-2 overflow-hidden mt-1">`;
+                // Avatar Leader
+                memberAvatarsHtml += `<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold shadow-sm z-10" title="Leader: ${p.leaderName}">${p.leaderName ? p.leaderName.charAt(0).toUpperCase() : 'L'}</div>`;
+                
+                // Render giả lập các avatar member khác
+                const colors = ['bg-green-100 text-green-600', 'bg-purple-100 text-purple-600', 'bg-orange-100 text-orange-600', 'bg-pink-100 text-pink-600'];
+                let displayCount = Math.min(p.currentMembers, 4); // Chỉ hiển thị tối đa 4 hình tròn để đỡ rối
+                for(let i = 1; i < displayCount; i++) {
+                    let color = colors[i % colors.length];
+                    memberAvatarsHtml += `<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white ${color} flex items-center justify-center text-[10px] font-bold shadow-sm z-${10-i}">M</div>`;
+                }
+                // Nếu dư người thì để dạng +x
+                if(p.currentMembers > 4) {
+                    memberAvatarsHtml += `<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-bold shadow-sm z-0">+${p.currentMembers - 4}</div>`;
+                }
+                memberAvatarsHtml += `</div>`;
+                let membersDisplay = p.currentMembers + '/' + (p.slotsNeeded || 5);
+
+                // Giao diện Nút bấm theo Trạng thái
                 if(p.status === 'pending') {
                     statusBadge = `<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-md border border-orange-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-regular fa-clock mr-1"></i> Chờ duyệt</span>`;
-                    
                     actionHtml = `
-                        <div class="flex items-center justify-center space-x-2">
-                            <button onclick="quickApprove(${realIndex}, event)" title="Phê duyệt nhanh" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-500 hover:text-white border border-green-200 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-check text-sm"></i></button>
-                            <button onclick="quickReject(${realIndex}, event)" title="Từ chối/Yêu cầu sửa" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-sm"></i></button>
-                            <button onclick="openApproveModal(${realIndex}, event)" title="Xem chi tiết" class="w-8 h-8 rounded-lg bg-white text-gray-600 hover:text-blue-600 hover:border-blue-300 border border-gray-200 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-eye text-sm"></i></button>
+                        <div class="flex items-center justify-center gap-2 px-2">
+                            <button onclick="quickApprove(${realIndex}, event)" title="Phê duyệt" class="flex-1 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-500 hover:text-white border border-green-200 transition font-bold text-[11px] shadow-sm"><i class="fa-solid fa-check mr-1"></i> Duyệt</button>
+                            <button onclick="quickReject(${realIndex}, event)" title="Từ chối" class="w-9 h-[26px] shrink-0 rounded-lg bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-sm"></i></button>
                         </div>
                     `;
                 } else if (p.status === 'active') {
                     statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-md border border-green-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-solid fa-person-digging mr-1"></i> Đang làm</span>`;
-                    
                     let prog = p.progress || Math.floor(Math.random() * 40) + 10; 
                     
                     actionHtml = `
                         <div class="flex flex-col w-full px-2">
-                            <div class="flex justify-between items-center mb-1.5">
+                            <div class="flex justify-between items-center mb-1">
                                 <span class="text-[10px] font-bold text-gray-500">Tiến độ</span>
                                 <span class="text-[10px] font-bold text-blue-600">${prog}%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-1.5 shadow-inner mb-2"><div class="bg-blue-500 h-1.5 rounded-full" style="width: ${prog}%"></div></div>
-                            <div class="flex items-center justify-between mt-1">
-                                <button onclick="openChatModal('${p.title}', event)" title="Nhắn tin cho nhóm" class="text-xs text-blue-600 font-bold hover:underline flex items-center"><i class="fa-regular fa-comment-dots mr-1"></i> Chat Team</button>
-                                <button onclick="openGradeModal(${realIndex}, event)" title="Chấm điểm hoàn thành" class="text-xs text-purple-600 font-bold hover:underline flex items-center bg-purple-50 px-2 py-0.5 rounded border border-purple-100"><i class="fa-solid fa-award mr-1"></i> Chấm điểm</button>
+                            <div class="flex items-center justify-between gap-1.5 mt-1">
+                                <button onclick="openChatModal('${p.title}', event)" title="Nhắn tin cho nhóm" class="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-1.5 rounded-lg text-[10px] transition border border-blue-100 shadow-sm flex items-center justify-center"><i class="fa-regular fa-comment-dots mr-1 text-sm"></i> Chat</button>
+                                <button onclick="openGradeModal(${realIndex}, event)" title="Chấm điểm hoàn thành" class="flex-1 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white font-bold py-1.5 rounded-lg text-[10px] transition border border-purple-100 shadow-sm flex items-center justify-center"><i class="fa-solid fa-award mr-1 text-sm"></i> Điểm</button>
                             </div>
                         </div>
                     `;
@@ -458,8 +548,7 @@
                     statusBadge = `<span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-md border border-purple-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-solid fa-check-double mr-1"></i> Hoàn thành</span>`;
                     actionHtml = `
                         <div class="flex flex-col items-center justify-center">
-                            <span class="text-lg font-black text-purple-600">${p.grade ? p.grade + '/10' : 'Đã duyệt'}</span>
-                            <button onclick="openApproveModal(${realIndex}, event)" class="mt-1 text-[10px] text-gray-500 hover:text-blue-600 font-bold hover:underline">Xem lại Đề cương</button>
+                            <span class="text-lg font-black text-purple-600 px-4 py-1 bg-purple-50 rounded-lg border border-purple-100 shadow-sm">${p.grade ? p.grade + '<span class="text-xs text-purple-400">/10</span>' : 'Đã duyệt'}</span>
                         </div>
                     `;
                 }
@@ -469,28 +558,63 @@
                 tr.onclick = (e) => openApproveModal(realIndex, e);
                 
                 tr.innerHTML = `
-                    <td class="p-4">
-                        <p class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${p.title}</p>
+                    <td class="p-4 border-r border-gray-50">
+                        <p class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition line-clamp-1">${p.title}</p>
                         <p class="text-xs text-gray-400 mt-1 line-clamp-1">${p.description}</p>
                     </td>
-                    <td class="p-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-[10px] border border-blue-200">${p.leaderName ? p.leaderName.charAt(0).toUpperCase() : 'L'}</div>
-                            <span class="text-sm font-medium text-gray-700">${p.leaderName || 'Leader'}</span>
+                    <td class="p-4 border-r border-gray-50">
+                        <span class="text-sm font-bold text-gray-700 block">${p.leaderName || 'Leader'}</span>
+                        <div class="flex items-center mt-1">
+                            ${memberAvatarsHtml}
+                            <span class="text-[10px] text-gray-500 ml-2 font-medium bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">${membersDisplay}</span>
                         </div>
                     </td>
-                    <td class="p-4"><span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${p.category}</span></td>
-                    <td class="p-4 text-center">${statusBadge}</td>
+                    <td class="p-4 border-r border-gray-50"><span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200 uppercase">${p.category}</span></td>
+                    <td class="p-4 text-center border-r border-gray-50">${statusBadge}</td>
                     <td class="p-4 text-center">${actionHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
+        // [ĐÃ SỬA] Hàm Render các Nút bấm Phân trang
+        function renderPaginationUI(totalPages) {
+            const container = document.getElementById('paginationButtons');
+            let html = '';
+            
+            // Nút Trước (Prev)
+            if(currentPage === 1) {
+                html += `<button class="px-3 py-1.5 border border-gray-200 rounded-lg cursor-not-allowed text-gray-400 bg-gray-50 flex items-center shadow-sm" disabled><i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Trước</button>`;
+            } else {
+                html += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-200 transition text-gray-600 bg-white flex items-center shadow-sm"><i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Trước</button>`;
+            }
+
+            // Các nút Số trang (1, 2, 3...)
+            for(let i = 1; i <= totalPages; i++) {
+                if(i === currentPage) {
+                    html += `<button class="w-8 h-8 flex items-center justify-center border border-blue-500 bg-blue-50 text-blue-600 font-bold rounded-lg shadow-sm">${i}</button>`;
+                } else {
+                    html += `<button onclick="changePage(${i})" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-200 transition text-gray-600 bg-white shadow-sm">${i}</button>`;
+                }
+            }
+
+            // Nút Tiếp (Next)
+            if(currentPage === totalPages || totalPages === 0) {
+                html += `<button class="px-3 py-1.5 border border-gray-200 rounded-lg cursor-not-allowed text-gray-400 bg-gray-50 flex items-center shadow-sm" disabled>Tiếp <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></button>`;
+            } else {
+                html += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-200 transition text-gray-600 bg-white flex items-center shadow-sm">Tiếp <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
         function exportToExcel() {
             alert("Báo cáo danh sách Đồ án và Điểm số đang được tải xuống dưới dạng file Excel (.xlsx).");
         }
 
+        // ==========================================
+        // DUYỆT / TỪ CHỐI DỰ ÁN
+        // ==========================================
         function quickApprove(index, event) {
             event.stopPropagation(); 
             allProjects[index].status = 'active';
@@ -514,7 +638,7 @@
         }
 
         // ==========================================
-        // MODAL CHI TIẾT
+        // MODAL XEM CHI TIẾT
         // ==========================================
         const approveModal = document.getElementById('approveModal'); 
         const approveContent = approveModal.querySelector('div.bg-white');
@@ -584,7 +708,7 @@
         }
 
         // ==========================================
-        // [MỚI] LOGIC CHẤM ĐIỂM DỰ ÁN
+        // MODAL CHẤM ĐIỂM DỰ ÁN
         // ==========================================
         const gradeModal = document.getElementById('gradeModal');
         const gradeContent = document.getElementById('gradeContent');
@@ -612,7 +736,7 @@
             event.preventDefault();
             const score = parseFloat(document.getElementById('gradeScore').value);
             if(gradingIndex !== null) {
-                allProjects[gradingIndex].status = 'completed'; // Chuyển trạng thái hoàn thành
+                allProjects[gradingIndex].status = 'completed'; 
                 allProjects[gradingIndex].progress = 100;
                 allProjects[gradingIndex].grade = score;
                 saveDataToLocal();
@@ -623,7 +747,7 @@
         }
 
         // ==========================================
-        // [MỚI] LOGIC CHAT CHO GIẢNG VIÊN
+        // MODAL CHAT CHO GIẢNG VIÊN
         // ==========================================
         const chatModal = document.getElementById('chatModal');
         const chatContent = document.getElementById('chatContent');
@@ -634,10 +758,10 @@
         const chatEmptyState = document.getElementById('chatEmptyState');
 
         let currentChatGroupTitle = '';
+        const chatData = {}; 
 
         function renderChatSidebar() {
             chatListSidebar.innerHTML = '';
-            // Chỉ lấy các dự án đang Active hoặc Completed
             const activeGroups = allProjects.filter(p => p.status === 'active' || p.status === 'completed');
             
             if(activeGroups.length === 0) {
@@ -664,23 +788,25 @@
 
         function selectGroupChat(title) {
             currentChatGroupTitle = title;
-            renderChatSidebar(); // Cập nhật lại màu active ở sidebar
+            renderChatSidebar(); 
 
-            // Đổi Header
             document.getElementById('chatHeaderTitle').innerText = "Nhóm: " + title;
 
-            // Fake data tin nhắn
-            chatMessagesArea.innerHTML = `
-                <div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 bg-gray-200/70 px-3 py-1 rounded-full uppercase tracking-wider">Hôm qua</span></div>
-                <div class="flex items-end gap-2">
-                    <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-sm"><i class="fa-solid fa-users"></i></div>
-                    <div class="bg-white border border-gray-200 p-3.5 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] sm:max-w-[75%]">
-                        <p class="text-xs font-bold text-blue-600 mb-1">Nhóm ${title}</p>
-                        <p class="text-sm text-gray-700 leading-relaxed">Dạ thưa Thầy/Cô, nhóm em đã chốt xong các chức năng chính. Hiện tại đang bắt đầu vẽ Wireframe ạ. Bọn em sẽ gửi file qua Drive sớm nhất.</p>
-                        <span class="text-[10px] text-gray-400 block mt-1 text-right">20:15</span>
+            if(!chatData[title]) {
+                chatData[title] = `
+                    <div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 bg-gray-200/70 px-3 py-1 rounded-full uppercase tracking-wider">Hôm qua</span></div>
+                    <div class="flex items-end gap-2">
+                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-sm"><i class="fa-solid fa-users"></i></div>
+                        <div class="bg-white border border-gray-200 p-3.5 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] sm:max-w-[75%]">
+                            <p class="text-xs font-bold text-blue-600 mb-1">Nhóm ${title}</p>
+                            <p class="text-sm text-gray-700 leading-relaxed">Dạ thưa Thầy/Cô, nhóm em đã chốt xong các chức năng chính. Hiện tại đang bắt đầu vẽ Wireframe ạ. Bọn em sẽ gửi file qua Drive sớm nhất.</p>
+                            <span class="text-[10px] text-gray-400 block mt-1 text-right">20:15</span>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
+            
+            chatMessagesArea.innerHTML = chatData[title];
             
             chatEmptyState.classList.add('hidden');
             chatActiveState.classList.remove('hidden');
@@ -700,7 +826,6 @@
             if (targetTitle && targetTitle !== 'all') {
                 selectGroupChat(targetTitle);
             } else {
-                // Nếu bấm nút bong bóng chung thì hiện Empty State
                 currentChatGroupTitle = '';
                 renderChatSidebar();
                 chatEmptyState.classList.remove('hidden');
@@ -742,6 +867,8 @@
             `;
 
             chatMessagesArea.insertAdjacentHTML('beforeend', newMsgHTML);
+            chatData[currentChatGroupTitle] = chatMessagesArea.innerHTML; 
+            
             chatInput.value = '';
             chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
         }
@@ -752,13 +879,6 @@
                 sendChatMessage(e);
             }
         });
-
-        function clearTestData() {
-            if(confirm('Bạn có chắc chắn muốn Đăng xuất hệ thống Giảng viên?')) {
-                localStorage.removeItem('userProfileData');
-                window.location.href = "index.html"; 
-            }
-        }
     </script>
 </body>
 </html>

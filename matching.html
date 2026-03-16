@@ -499,6 +499,7 @@
     </div>
 
     <script>
+        // 1. BIẾN TOÀN CỤC & DỮ LIỆU MẪU
         let hasCompletedProfile = false; 
         let currentProjectToApply = "";
         let savedProjects = []; 
@@ -543,10 +544,113 @@
             }
         ];
 
-        // [ĐÃ SỬA] Hàm quản lý hiển thị Nút "Khu Vực Leader"
+        // 2. TRẠM KIỂM SOÁT BẢO MẬT & TẢI DỮ LIỆU (ON LOAD)
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('userProfileData');
+            
+            if(!savedUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            const userData = JSON.parse(savedUser);
+            
+            if(userData.role === 'teacher') {
+                alert('⚠️ KHU VỰC SINH VIÊN: Giảng viên không có quyền truy cập trang này!');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            hasCompletedProfile = true;
+            loggedInUserName = userData.name;
+            
+            document.getElementById('userName').classList.replace('text-gray-500', 'text-green-600'); 
+            document.getElementById('userName').innerText = userData.name;
+            
+            const avatarEl = document.getElementById('userAvatar');
+            if(userData.avatarBase64) {
+                loggedInUserAvatarBase64 = userData.avatarBase64;
+                avatarEl.innerHTML = `<img src="${userData.avatarBase64}" class="w-full h-full object-cover rounded-full">`;
+                document.getElementById('avatarPreview').src = userData.avatarBase64;
+                document.getElementById('avatarPreview').classList.remove('hidden');
+                document.querySelector('#avatarPreviewContainer i').classList.add('hidden');
+            } else {
+                avatarEl.classList.replace('bg-gray-300', 'bg-green-500'); 
+                avatarEl.innerText = userData.name.charAt(0).toUpperCase();
+            }
+            
+            document.getElementById('profileReminderBanner').classList.add('hidden');
+            document.getElementById('dropdownProgressBar').style.width = '100%';
+            document.getElementById('dropdownProgressText').innerText = '100% - Hồ sơ xuất sắc';
+            
+            updateMenuVisibility(true);
+
+            const savedApplied = localStorage.getItem('appliedProjectsData');
+            if(savedApplied) {
+                appliedProjects = JSON.parse(savedApplied);
+                updateAppliedMenuCount();
+            }
+
+            const savedCustomProjects = localStorage.getItem('customProjectsData');
+            if(savedCustomProjects) { customProjects = JSON.parse(savedCustomProjects); }
+            
+            updateLeaderVisibility();
+            filterProjects();
+
+            const savedHearts = localStorage.getItem('savedProjectsData');
+            if(savedHearts) {
+                savedProjects = JSON.parse(savedHearts);
+                updateSavedBadgeCount();
+            }
+        });
+
+        // 3. KHỞI TẠO BỘ GÕ KỸ NĂNG (TAG INPUT) - QUAN TRỌNG
+        const predefinedSkills = ["C#", "SQL Server", "HTML/CSS", "Bootstrap", "JavaScript", "ReactJS", "Node.js", "Figma", "UI/UX Design", "Marketing", "Content Writing", "C/C++", "Arduino", "Kế toán", "Quản lý dự án", "Tiếng Anh", "Photoshop"];
+        const profileSkills = []; const projectSkills = [];
+        
+        function setupTagInput(inputId, containerId, suggestionId, arrayRef, globalRemoveName) {
+            const input = document.getElementById(inputId); const container = document.getElementById(containerId); const suggestions = document.getElementById(suggestionId);
+            window[globalRemoveName] = function(skill) { const index = arrayRef.indexOf(skill); if (index > -1) arrayRef.splice(index, 1); render(); }
+            
+            function render() { container.querySelectorAll('.skill-tag').forEach(t => t.remove()); arrayRef.forEach(skill => { const span = document.createElement('span'); span.className = 'skill-tag bg-blue-100 text-[#2563eb] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm border border-blue-200 mt-1'; span.innerHTML = `${skill} <i class="fa-solid fa-xmark ml-2 text-blue-400 hover:text-red-500 cursor-pointer text-sm transition" onclick="${globalRemoveName}('${skill}')"></i>`; container.insertBefore(span, input); }); }
+            function addSkill(skill) { if (skill && !arrayRef.includes(skill)) { arrayRef.push(skill); render(); } input.value = ''; suggestions.classList.add('hidden'); input.focus(); }
+            
+            function showAll() {
+                suggestions.innerHTML = ''; 
+                const availableSkills = predefinedSkills.filter(s => !arrayRef.includes(s));
+                
+                if (availableSkills.length === 0) {
+                    const li = document.createElement('li'); li.className = 'px-5 py-3 text-sm text-gray-400 italic'; li.textContent = 'Bạn đã chọn hết kỹ năng có sẵn!'; suggestions.appendChild(li);
+                } else {
+                    availableSkills.forEach(s => { 
+                        const li = document.createElement('li'); li.className = 'px-5 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 flex items-center'; 
+                        li.innerHTML = `<i class="fa-solid fa-plus text-blue-400 mr-2 text-xs"></i> ${s}`; 
+                        li.onmousedown = (e) => { e.preventDefault(); addSkill(s); }; suggestions.appendChild(li); 
+                    });
+                }
+                suggestions.classList.remove('hidden');
+            }
+
+            input.addEventListener('input', function() { const val = this.value.toLowerCase().trim(); suggestions.innerHTML = ''; if (val) { const filtered = predefinedSkills.filter(s => s.toLowerCase().includes(val) && !arrayRef.includes(s)); if (filtered.length > 0) { filtered.forEach(s => { const li = document.createElement('li'); li.className = 'px-5 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50'; li.textContent = s; li.onmousedown = (e) => { e.preventDefault(); addSkill(s); }; suggestions.appendChild(li); }); } else { const li = document.createElement('li'); li.className = 'px-5 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic'; li.innerHTML = `Thêm kỹ năng mới: <strong class="text-blue-600">${this.value}</strong>`; li.onmousedown = (e) => { e.preventDefault(); addSkill(this.value); }; suggestions.appendChild(li); } suggestions.classList.remove('hidden'); } else { showAll(); } });
+            
+            input.addEventListener('focus', function() { if (this.value === '') showAll(); }); 
+            input.addEventListener('blur', function() { setTimeout(() => suggestions.classList.add('hidden'), 150); }); 
+            input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (this.value.trim()) addSkill(this.value.trim()); } });
+            
+            return { 
+                reset: function() { arrayRef.length = 0; render(); },
+                toggle: function() {
+                    if (suggestions.classList.contains('hidden')) { input.focus(); } else { suggestions.classList.add('hidden'); }
+                }
+            };
+        }
+        
+        let profileTagManager = setupTagInput('profileSkillInput', 'profileSkillContainer', 'profileSkillSuggestions', profileSkills, 'removeProfileSkill');
+        let projectTagManager = setupTagInput('projectSkillInput', 'projectSkillContainer', 'projectSkillSuggestions', projectSkills, 'removeProjectSkill');
+
+        // 4. CÁC HÀM XỬ LÝ GIAO DIỆN VÀ LOGIC
         function updateLeaderVisibility() {
             const leaderBtn = document.getElementById('leaderAreaBtn');
-            // Kiểm tra xem user hiện tại có sở hữu dự án nào trong mảng customProjects không
             const isLeader = customProjects.some(p => p.leaderName === loggedInUserName && p.isOwner === true);
             
             if (isLeader) {
@@ -616,58 +720,6 @@
             else { personalArea.classList.add('hidden'); badge.classList.add('hidden'); }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedApplied = localStorage.getItem('appliedProjectsData');
-            if(savedApplied) {
-                appliedProjects = JSON.parse(savedApplied);
-                updateAppliedMenuCount();
-            }
-
-            const savedUser = localStorage.getItem('userProfileData');
-            if(savedUser) {
-                const userData = JSON.parse(savedUser);
-                hasCompletedProfile = true;
-                loggedInUserName = userData.name;
-                
-                document.getElementById('userName').classList.replace('text-gray-500', 'text-green-600'); 
-                document.getElementById('userName').innerText = userData.name;
-                
-                const avatarEl = document.getElementById('userAvatar');
-                if(userData.avatarBase64) {
-                    loggedInUserAvatarBase64 = userData.avatarBase64;
-                    avatarEl.innerHTML = `<img src="${userData.avatarBase64}" class="w-full h-full object-cover rounded-full">`;
-                    document.getElementById('avatarPreview').src = userData.avatarBase64;
-                    document.getElementById('avatarPreview').classList.remove('hidden');
-                    document.querySelector('#avatarPreviewContainer i').classList.add('hidden');
-                } else {
-                    avatarEl.classList.replace('bg-gray-300', 'bg-green-500'); 
-                    avatarEl.innerText = userData.name.charAt(0).toUpperCase();
-                }
-                
-                document.getElementById('profileReminderBanner').classList.add('hidden');
-                document.getElementById('dropdownProgressBar').style.width = '100%';
-                document.getElementById('dropdownProgressText').innerText = '100% - Hồ sơ xuất sắc';
-                
-                updateMenuVisibility(true);
-            } else {
-                updateMenuVisibility(false);
-            }
-
-            const savedCustomProjects = localStorage.getItem('customProjectsData');
-            if(savedCustomProjects) { customProjects = JSON.parse(savedCustomProjects); }
-            
-            // Cập nhật hiển thị Khu vực Leader ngay lúc load trang
-            updateLeaderVisibility();
-            
-            filterProjects();
-
-            const savedHearts = localStorage.getItem('savedProjectsData');
-            if(savedHearts) {
-                savedProjects = JSON.parse(savedHearts);
-                updateSavedBadgeCount();
-            }
-        });
-
         function previewAvatar(event) {
             const file = event.target.files[0];
             if(file) {
@@ -695,12 +747,11 @@
         });
 
         function clearTestData() {
-    if(confirm('Bạn có chắc chắn muốn Đăng xuất?')) {
-        // Chỉ xóa thông tin phiên đăng nhập hiện tại, GIỮ NGUYÊN tài khoản và dự án
-        localStorage.removeItem('userProfileData'); 
-        window.location.href = "index.html"; // Đá văng ra ngoài trang Đăng nhập
-    }
-}
+            if(confirm('Bạn có chắc chắn muốn Đăng xuất?')) {
+                localStorage.removeItem('userProfileData'); 
+                window.location.href = "index.html"; 
+            }
+        }
 
         function renderProjectCard(p) {
             let skillsHtml = ''; 
@@ -727,7 +778,6 @@
             const isApplied = appliedProjects.includes(p.title);
             let actionButton = '';
 
-            // [LOGIC ĐÃ SỬA] Phân quyền cho nút bấm Thẻ dự án
             if (p.isOwner && p.leaderName === loggedInUserName) {
                 actionButton = `<button onclick="window.location.href='kanban.html'" class="bg-white border-2 border-blue-600 text-blue-600 font-bold py-2 px-6 rounded-full text-sm hover:bg-blue-50 transition">Dự án của bạn</button>`;
             } else if (isApplied) {
@@ -804,9 +854,10 @@
         function closeSavedModal() { savedSidebarContent.classList.remove('translate-x-0'); savedSidebarContent.classList.add('translate-x-full'); setTimeout(() => { savedModal.classList.remove('flex'); savedModal.classList.add('hidden'); document.body.classList.remove('modal-active'); }, 300); }
 
         function renderSavedList() {
-            savedProjectsList.innerHTML = ''; savedProjectsList.appendChild(emptySavedState);
-            if(savedProjects.length === 0) { emptySavedState.classList.remove('hidden'); } else {
-                emptySavedState.classList.add('hidden');
+            savedProjectsList.innerHTML = '';
+            if(savedProjects.length === 0) { 
+                savedProjectsList.innerHTML = '<div class="text-center py-10"><i class="fa-regular fa-heart text-4xl text-gray-300 mb-2"></i><p class="text-gray-500">Bạn chưa lưu dự án nào.</p></div>'; 
+            } else {
                 savedProjects.forEach(p => {
                     const card = document.createElement('div'); card.className = "bg-white border border-gray-200 p-5 rounded-2xl shadow-sm relative group hover:border-blue-300 transition-colors";
                     card.innerHTML = `<button class="absolute top-3 right-3 w-7 h-7 rounded-full bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 transition flex items-center justify-center" onclick="removeSavedItem('${p.title}')" title="Bỏ lưu"><i class="fa-solid fa-trash-can text-xs"></i></button><div class="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1">${p.category}</div><h4 class="font-bold text-gray-800 text-sm mb-3 pr-8 line-clamp-2">${p.title}</h4><div class="flex gap-2 mt-3 pt-3 border-t border-gray-50"><button onclick="handleApply('${p.title}')" class="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-2.5 rounded-xl text-xs transition border border-blue-100 shadow-sm">Ứng tuyển</button><button onclick="openDetailModal('${p.title}', 'Leader')" class="px-4 bg-gray-50 text-gray-600 hover:bg-gray-200 font-bold py-2.5 rounded-xl text-xs transition border border-gray-100">Chi tiết</button></div>`;
@@ -832,7 +883,6 @@
             if(project) document.getElementById('detailDesc').innerText = project.description;
             
             const btnContainer = document.getElementById('detailActionBtnContainer');
-            // [LOGIC ĐÃ SỬA] Phân quyền cho nút trong Modal Chi tiết
             if (project && project.isOwner && project.leaderName === loggedInUserName) {
                 btnContainer.innerHTML = `<button onclick="window.location.href='kanban.html'" class="w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-3.5 rounded-xl hover:bg-blue-50 transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center">Dự án của bạn</button>`;
             } else if (appliedProjects.includes(title)) {
@@ -904,7 +954,7 @@
             document.getElementById('dropdownProgressText').innerText = '100% - Hồ sơ xuất sắc';
             
             updateMenuVisibility(true);
-            updateLeaderVisibility(); // Bổ sung check lại quyền Leader
+            updateLeaderVisibility();
             filterProjects(); 
 
             closeProfileModal();
@@ -1021,7 +1071,6 @@
 
             filterProjects(); 
 
-            // Cập nhật Leader
             localStorage.setItem('leaderProjectData', JSON.stringify({ title: projName, category: dynamicCategory, slotsNeeded: totalSlots }));
             updateLeaderVisibility();
             const leaderBtn = document.getElementById('leaderAreaBtn');
@@ -1034,53 +1083,6 @@
             const container = document.getElementById('dynamicRolesContainer');
             while (container.children.length > 1) { container.removeChild(container.lastChild); }
         }
-
-        // TAG INPUT SCRIPT
-        const predefinedSkills = ["C#", "SQL Server", "HTML/CSS", "Bootstrap", "JavaScript", "ReactJS", "Node.js", "Figma", "UI/UX Design", "Marketing", "Content Writing", "C/C++", "Arduino", "Kế toán", "Quản lý dự án", "Tiếng Anh", "Photoshop"];
-        const profileSkills = []; const projectSkills = [];
-        
-        function setupTagInput(inputId, containerId, suggestionId, arrayRef, globalRemoveName) {
-            const input = document.getElementById(inputId); const container = document.getElementById(containerId); const suggestions = document.getElementById(suggestionId);
-            window[globalRemoveName] = function(skill) { const index = arrayRef.indexOf(skill); if (index > -1) arrayRef.splice(index, 1); render(); }
-            
-            function render() { container.querySelectorAll('.skill-tag').forEach(t => t.remove()); arrayRef.forEach(skill => { const span = document.createElement('span'); span.className = 'skill-tag bg-blue-100 text-[#2563eb] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm border border-blue-200 mt-1'; span.innerHTML = `${skill} <i class="fa-solid fa-xmark ml-2 text-blue-400 hover:text-red-500 cursor-pointer text-sm transition" onclick="${globalRemoveName}('${skill}')"></i>`; container.insertBefore(span, input); }); }
-            function addSkill(skill) { if (skill && !arrayRef.includes(skill)) { arrayRef.push(skill); render(); } input.value = ''; suggestions.classList.add('hidden'); input.focus(); }
-            
-            function showAll() {
-                suggestions.innerHTML = ''; 
-                const availableSkills = predefinedSkills.filter(s => !arrayRef.includes(s));
-                
-                if (availableSkills.length === 0) {
-                    const li = document.createElement('li'); li.className = 'px-5 py-3 text-sm text-gray-400 italic'; li.textContent = 'Bạn đã chọn hết kỹ năng có sẵn!'; suggestions.appendChild(li);
-                } else {
-                    availableSkills.forEach(s => { 
-                        const li = document.createElement('li'); li.className = 'px-5 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 flex items-center'; 
-                        li.innerHTML = `<i class="fa-solid fa-plus text-blue-400 mr-2 text-xs"></i> ${s}`; 
-                        li.onmousedown = (e) => { e.preventDefault(); addSkill(s); }; suggestions.appendChild(li); 
-                    });
-                }
-                suggestions.classList.remove('hidden');
-            }
-
-            input.addEventListener('input', function() { const val = this.value.toLowerCase().trim(); suggestions.innerHTML = ''; if (val) { const filtered = predefinedSkills.filter(s => s.toLowerCase().includes(val) && !arrayRef.includes(s)); if (filtered.length > 0) { filtered.forEach(s => { const li = document.createElement('li'); li.className = 'px-5 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50'; li.textContent = s; li.onmousedown = (e) => { e.preventDefault(); addSkill(s); }; suggestions.appendChild(li); }); } else { const li = document.createElement('li'); li.className = 'px-5 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic'; li.innerHTML = `Thêm kỹ năng mới: <strong class="text-blue-600">${this.value}</strong>`; li.onmousedown = (e) => { e.preventDefault(); addSkill(this.value); }; suggestions.appendChild(li); } suggestions.classList.remove('hidden'); } else { showAll(); } });
-            
-            input.addEventListener('focus', function() { if (this.value === '') showAll(); }); 
-            input.addEventListener('blur', function() { setTimeout(() => suggestions.classList.add('hidden'), 150); }); 
-            input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (this.value.trim()) addSkill(this.value.trim()); } });
-            
-            return { 
-                reset: function() { arrayRef.length = 0; render(); },
-                toggle: function() {
-                    if (suggestions.classList.contains('hidden')) { input.focus(); } else { suggestions.classList.add('hidden'); }
-                }
-            };
-        }
-        
-        let profileTagManager, projectTagManager;
-        document.addEventListener('DOMContentLoaded', () => { 
-            profileTagManager = setupTagInput('profileSkillInput', 'profileSkillContainer', 'profileSkillSuggestions', profileSkills, 'removeProfileSkill'); 
-            projectTagManager = setupTagInput('projectSkillInput', 'projectSkillContainer', 'projectSkillSuggestions', projectSkills, 'removeProjectSkill'); 
-        });
     </script>
 </body>
 </html>

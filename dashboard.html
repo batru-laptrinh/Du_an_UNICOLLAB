@@ -15,10 +15,11 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .sidebar-item.active { background-color: #ebf5ff; color: #2563eb; border-right: 4px solid #2563eb; font-weight: bold; }
         
-        /* Hiệu ứng click cho Card thống kê */
         .stat-card { transition: all 0.3s ease; cursor: pointer; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2); border-color: #bfdbfe; }
         .stat-card.active-filter { ring: 2px; ring-color: #3b82f6; border-color: #3b82f6; background-color: #f8fafc; }
+        
+        .modal-active { overflow: hidden; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden bg-gray-50">
@@ -35,20 +36,20 @@
                 <a href="#" class="sidebar-item active flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
                     <i class="fa-solid fa-chart-pie w-6"></i> Tổng quan
                 </a>
-                <a href="#" onclick="alert('Tính năng đang phát triển')" class="sidebar-item flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
+                <a href="#" onclick="alert('Tính năng Quản lý Đồ án đang được hoàn thiện.')" class="sidebar-item flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
                     <i class="fa-solid fa-folder-tree w-6"></i> Quản lý Đồ án
                 </a>
-                <a href="#" onclick="alert('Tính năng đang phát triển')" class="sidebar-item flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
+                <a href="#" onclick="alert('Tính năng Quản lý Sinh viên đang được hoàn thiện.')" class="sidebar-item flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
                     <i class="fa-solid fa-users w-6"></i> Sinh viên & Nhóm
                 </a>
-                <a href="#" onclick="alert('Tính năng đang phát triển')" class="sidebar-item flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
+                <a href="#" onclick="alert('Tính năng Báo cáo thống kê đang được hoàn thiện.')" class="sidebar-item flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition">
                     <i class="fa-solid fa-chart-line w-6"></i> Báo cáo thống kê
                 </a>
             </nav>
         </div>
 
         <div class="mt-auto p-6 border-t border-gray-100">
-            <a href="#" onclick="alert('Tính năng đang phát triển')" class="flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition mb-2">
+            <a href="#" onclick="alert('Tính năng Cài đặt đang được phát triển.')" class="flex items-center px-4 py-3 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition mb-2">
                 <i class="fa-solid fa-gear w-6"></i> Cài đặt hệ thống
             </a>
             <a href="#" onclick="clearTestData()" class="flex items-center px-4 py-3 text-sm text-red-500 font-bold rounded-lg hover:bg-red-50 transition border border-transparent hover:border-red-100">
@@ -68,15 +69,15 @@
             <div class="flex items-center space-x-5">
                 <div class="relative hidden sm:block">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" placeholder="Tìm kiếm nhanh..." class="pl-9 pr-4 py-2 bg-gray-100 border-none rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition w-64">
+                    <input type="text" id="searchProject" oninput="filterTableBySearch()" placeholder="Tìm kiếm nhanh..." class="pl-9 pr-4 py-2 bg-gray-100 border-none rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition w-64">
                 </div>
                 
-                <button class="text-gray-400 hover:text-blue-500 transition relative group">
+                <button onclick="alert('Không có thông báo mới.')" class="text-gray-400 hover:text-blue-500 transition relative group">
                     <i class="fa-regular fa-bell text-xl"></i>
                     <span class="absolute top-0 right-0 bg-red-500 w-2 h-2 rounded-full"></span>
                 </button>
                 
-                <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                <div class="flex items-center space-x-3 pl-4 border-l border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="clearTestData()" title="Đăng xuất">
                     <div class="text-right hidden md:block">
                         <p class="text-sm font-bold text-gray-800" id="teacherName">Giảng viên</p>
                         <p class="text-xs text-blue-600 font-medium">Khoa CNTT</p>
@@ -86,7 +87,7 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8">
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8 relative">
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 fade-in gap-4">
                 <div>
@@ -105,7 +106,7 @@
                         <i class="fa-solid fa-file-excel mr-2"></i> Xuất Excel
                     </button>
                     
-                    <button onclick="window.location.reload()" class="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 font-bold py-2.5 px-4 rounded-xl shadow-sm transition text-sm flex items-center">
+                    <button onclick="window.location.reload()" class="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 font-bold py-2.5 px-4 rounded-xl shadow-sm transition text-sm flex items-center" title="Làm mới">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
@@ -146,14 +147,14 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
+                <div onclick="filterTableByStatus('completed')" id="card-completed" class="stat-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
                     <div class="flex justify-between items-start relative z-10">
                         <div>
-                            <p class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">SV Tham gia</p>
-                            <h4 class="text-3xl font-black text-gray-800" id="statStudents">124</h4>
+                            <p class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Đã hoàn thành</p>
+                            <h4 class="text-3xl font-black text-gray-800" id="statCompleted">0</h4>
                         </div>
-                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-users"></i></div>
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-check-double"></i></div>
                     </div>
                 </div>
             </div>
@@ -171,7 +172,7 @@
                                 <th class="p-4 font-bold">Trưởng nhóm</th>
                                 <th class="p-4 font-bold">Lĩnh vực</th>
                                 <th class="p-4 font-bold text-center">Trạng thái</th>
-                                <th class="p-4 font-bold text-center w-48">Quản lý / Thao tác</th>
+                                <th class="p-4 font-bold text-center w-56">Quản lý / Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="projectTableBody" class="text-sm text-gray-700 divide-y divide-gray-100">
@@ -189,14 +190,19 @@
                 </div>
             </div>
 
+            <button onclick="openChatModal('all')" class="fixed bottom-8 right-8 w-14 h-14 bg-[#0a7cff] text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:bg-blue-700 hover:scale-110 transition-all duration-300 flex items-center justify-center z-40 group" title="Trung tâm Tin nhắn">
+                <i class="fa-brands fa-facebook-messenger text-2xl group-hover:animate-bounce"></i>
+                <span class="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full"></span>
+            </button>
+
         </main>
     </div>
 
     <div id="approveModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative transition-all duration-300 scale-95 opacity-0 p-8 border-t-8 border-blue-500">
+        <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative transition-all duration-300 scale-95 opacity-0 p-8 border-t-8 border-blue-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <button onclick="closeApproveModal()" class="absolute top-5 right-5 w-8 h-8 bg-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full flex items-center justify-center transition z-10"><i class="fa-solid fa-xmark"></i></button>
             
-            <div class="mb-6">
+            <div class="mb-6 pr-8">
                 <span id="modalCategory" class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase mb-3 border border-blue-200">Lĩnh vực</span>
                 <h2 id="modalTitle" class="text-2xl font-extrabold text-gray-800 leading-tight">Tên dự án</h2>
                 <div class="flex items-center mt-3 text-sm text-gray-500">
@@ -219,12 +225,87 @@
         </div>
     </div>
 
+    <div id="gradeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative p-8 border-t-8 border-purple-500 scale-95 opacity-0 transition-all duration-300" id="gradeContent">
+            <h2 class="text-xl font-extrabold text-gray-800 mb-2">Chấm điểm Dự án</h2>
+            <p class="text-sm text-gray-500 mb-6 line-clamp-1" id="gradeProjectName">Tên dự án...</p>
+            
+            <form onsubmit="submitGrade(event)">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Điểm tổng kết (Hệ 10) *</label>
+                    <input type="number" id="gradeScore" min="0" max="10" step="0.5" required placeholder="Ví dụ: 8.5" class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-lg font-bold text-center outline-none focus:bg-white focus:ring-2 focus:ring-purple-500 transition">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Nhận xét của Giảng viên</label>
+                    <textarea id="gradeComment" rows="4" placeholder="Nhập đánh giá về mức độ hoàn thành, thái độ làm việc của nhóm..." class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-1 focus:ring-purple-500 transition resize-none"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeGradeModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition text-sm">Hủy</button>
+                    <button type="submit" class="px-6 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition text-sm shadow-md"><i class="fa-solid fa-check-double mr-2"></i> Lưu điểm & Hoàn thành</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="chatModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-2 sm:p-5">
+        <div class="bg-white rounded-2xl w-full max-w-5xl h-[85vh] sm:h-[80vh] shadow-2xl flex overflow-hidden relative transition-all duration-300 scale-95 opacity-0" id="chatContent">
+            
+            <div class="w-20 md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col shrink-0">
+                <div class="p-4 border-b border-gray-200 hidden md:block bg-white">
+                    <h2 class="text-xl font-extrabold text-gray-800">Liên hệ Nhóm</h2>
+                    <div class="mt-4 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" placeholder="Tìm kiếm nhóm..." class="w-full pl-10 pr-3 py-2.5 bg-gray-100 border-none rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar" id="chatListSidebar">
+                    </div>
+            </div>
+
+            <div class="flex-1 flex flex-col bg-white h-full relative" id="chatBoxContainer">
+                <div id="chatEmptyState" class="flex-1 flex flex-col items-center justify-center bg-gray-50">
+                    <div class="w-20 h-20 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fa-regular fa-comments"></i></div>
+                    <h3 class="text-lg font-bold text-gray-700">Chọn một nhóm để bắt đầu trò chuyện</h3>
+                    <p class="text-sm text-gray-500 mt-2">Theo dõi tiến độ và hỗ trợ sinh viên kịp thời.</p>
+                </div>
+
+                <div id="chatActiveState" class="hidden flex-1 flex flex-col h-full">
+                    <div class="h-16 border-b border-gray-200 flex justify-between items-center px-4 md:px-6 bg-white shrink-0 shadow-sm z-10">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-sm" id="chatHeaderIcon"><i class="fa-solid fa-users"></i></div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-gray-800" id="chatHeaderTitle">Nhóm: ...</h3>
+                                <p class="text-xs text-green-500 font-bold flex items-center mt-0.5"><span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Đang hoạt động</p>
+                            </div>
+                        </div>
+                        <button onclick="closeChatModal()" class="w-8 h-8 bg-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#f8fafc] custom-scrollbar" id="chatMessagesArea">
+                        </div>
+
+                    <div class="p-3 md:p-4 bg-white border-t border-gray-200 shrink-0">
+                        <form onsubmit="sendChatMessage(event)" class="flex items-end gap-2 bg-gray-100 rounded-3xl p-1.5 border border-gray-200 focus-within:ring-1 focus-within:ring-blue-500 focus-within:bg-white transition">
+                            <button type="button" class="w-10 h-10 text-gray-400 hover:text-blue-600 shrink-0 flex items-center justify-center transition text-xl mb-0.5"><i class="fa-solid fa-paperclip"></i></button>
+                            <textarea id="chatInputMessage" rows="1" placeholder="Nhắn tin cho nhóm..." class="flex-1 bg-transparent border-none px-2 py-2.5 text-sm outline-none resize-none custom-scrollbar max-h-32 min-h-[40px] text-gray-700"></textarea>
+                            <button type="submit" class="w-10 h-10 bg-blue-600 text-white rounded-full shrink-0 flex items-center justify-center hover:bg-blue-700 transition shadow-sm mb-0.5"><i class="fa-solid fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
     <script>
         let allProjects = []; 
         let currentReviewingProject = null;
-        let currentFilter = 'all'; // Trạng thái bộ lọc hiện tại ('all', 'pending', 'active')
+        let currentReviewingIndex = null;
+        let currentFilter = 'all'; 
 
-        // [SỬA LỖI] Data mẫu đã chuẩn hóa lại "Thiết Kế Web"
         const defaultProjects = [
             {
                 title: "Website Thương mại đồ thủ công",
@@ -235,7 +316,8 @@
                 skills: ["HTML/CSS", "Bootstrap", "Figma"],
                 leaderName: "Trần Hữu Nam",
                 status: "pending",
-                progress: 0
+                progress: 0,
+                grade: null
             },
             {
                 title: "Chiến dịch Truyền thông Mùa hè Xanh",
@@ -245,8 +327,9 @@
                 description: "Thực thi chiến dịch truyền thông đa kênh cho CLB tình nguyện.",
                 skills: ["Marketing", "Content Writing"],
                 leaderName: "Lê Ngọc Hân",
-                status: "pending",
-                progress: 0
+                status: "active",
+                progress: 85, 
+                grade: null
             },
             {
                 title: "App Đặt sân cầu lông & Quản lý",
@@ -256,8 +339,9 @@
                 description: "Dự án xây dựng phần mềm đặt sân, tính tiền tự động.",
                 skills: ["C#", "SQL Server"],
                 leaderName: "Nguyễn Văn A",
-                status: "active",
-                progress: 45 // [MỚI] Data ảo hiển thị thanh tiến độ Kanban
+                status: "completed",
+                progress: 100,
+                grade: 9.5
             }
         ];
 
@@ -276,7 +360,8 @@
                 customProjects = customProjects.map(p => ({
                     ...p, 
                     status: p.status || 'pending',
-                    progress: p.progress || 0
+                    progress: p.progress || 0,
+                    grade: p.grade || null
                 }));
             }
 
@@ -288,20 +373,15 @@
 
         function updateDashboardStats() {
             document.getElementById('statTotalProj').innerText = allProjects.length;
-            
-            const pendingCount = allProjects.filter(p => p.status === 'pending').length;
-            document.getElementById('statPending').innerText = pendingCount;
-            
-            const activeCount = allProjects.filter(p => p.status === 'active').length;
-            document.getElementById('statActive').innerText = activeCount;
+            document.getElementById('statPending').innerText = allProjects.filter(p => p.status === 'pending').length;
+            document.getElementById('statActive').innerText = allProjects.filter(p => p.status === 'active').length;
+            document.getElementById('statCompleted').innerText = allProjects.filter(p => p.status === 'completed').length;
         }
 
-        // [MỚI] TÍNH NĂNG LỌC QUA THẺ CARD BẤM ĐƯỢC
         function filterTableByStatus(status) {
             currentFilter = status;
             
-            // Xử lý đổi màu viền cho thẻ đang chọn
-            ['all', 'pending', 'active'].forEach(s => {
+            ['all', 'pending', 'active', 'completed'].forEach(s => {
                 const card = document.getElementById('card-' + s);
                 if(s === status) {
                     card.classList.add('border-blue-500', 'bg-blue-50/20');
@@ -311,18 +391,25 @@
                     card.classList.add('border-gray-100');
                 }
             });
-
             renderTable();
         }
 
-        // [CẬP NHẬT] HÀM RENDER BẢNG VỚI NÚT THAO TÁC NHANH VÀ THANH TIẾN ĐỘ
-        function renderTable() {
+        function filterTableBySearch() {
+            renderTable(document.getElementById('searchProject').value);
+        }
+
+        function renderTable(searchKeyword = '') {
             const tbody = document.getElementById('projectTableBody');
             tbody.innerHTML = '';
 
             let filteredProjects = allProjects;
+            
             if(currentFilter !== 'all') {
-                filteredProjects = allProjects.filter(p => p.status === currentFilter);
+                filteredProjects = filteredProjects.filter(p => p.status === currentFilter);
+            }
+            if(searchKeyword) {
+                const keyword = searchKeyword.toLowerCase();
+                filteredProjects = filteredProjects.filter(p => p.title.toLowerCase().includes(keyword) || p.leaderName.toLowerCase().includes(keyword));
             }
 
             document.getElementById('displayCountText').innerText = filteredProjects.length;
@@ -332,8 +419,8 @@
                 return;
             }
 
-            filteredProjects.forEach((p, originalIndex) => {
-                // Tìm lại đúng index trong mảng gốc allProjects để xử lý
+            filteredProjects.forEach((p) => {
+                // Lấy đúng index gốc
                 const realIndex = allProjects.findIndex(proj => proj.title === p.title);
 
                 let statusBadge = '';
@@ -342,7 +429,6 @@
                 if(p.status === 'pending') {
                     statusBadge = `<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-md border border-orange-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-regular fa-clock mr-1"></i> Chờ duyệt</span>`;
                     
-                    // [MỚI] QUICK ACTIONS: Nút V / X thao tác nhanh không cần mở Modal
                     actionHtml = `
                         <div class="flex items-center justify-center space-x-2">
                             <button onclick="quickApprove(${realIndex}, event)" title="Phê duyệt nhanh" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-500 hover:text-white border border-green-200 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-check text-sm"></i></button>
@@ -351,25 +437,35 @@
                         </div>
                     `;
                 } else if (p.status === 'active') {
-                    statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-md border border-green-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-solid fa-check-double mr-1"></i> Đang làm</span>`;
+                    statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-md border border-green-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-solid fa-person-digging mr-1"></i> Đang làm</span>`;
                     
-                    // [MỚI] PROGRESS BAR THAY THẾ CHO NÚT BẤM ĐƠN ĐIỆU
-                    let prog = p.progress || Math.floor(Math.random() * 40) + 10; // Giả lập % tiến độ
+                    let prog = p.progress || Math.floor(Math.random() * 40) + 10; 
+                    
                     actionHtml = `
-                        <div class="flex flex-col items-center justify-center w-full px-4" title="Click để xem bảng Kanban">
-                            <div class="w-full flex justify-between text-[10px] font-bold text-gray-500 mb-1"><span>Tiến độ</span><span class="text-blue-600">${prog}%</span></div>
-                            <div class="w-full bg-gray-200 rounded-full h-1.5 shadow-inner"><div class="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style="width: ${prog}%"></div></div>
-                            <button onclick="openApproveModal(${realIndex}, event)" class="mt-1.5 text-[10px] text-gray-400 hover:text-blue-600 hover:underline font-bold transition flex items-center"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Xem bảng Board</button>
+                        <div class="flex flex-col w-full px-2">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-[10px] font-bold text-gray-500">Tiến độ</span>
+                                <span class="text-[10px] font-bold text-blue-600">${prog}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5 shadow-inner mb-2"><div class="bg-blue-500 h-1.5 rounded-full" style="width: ${prog}%"></div></div>
+                            <div class="flex items-center justify-between mt-1">
+                                <button onclick="openChatModal('${p.title}', event)" title="Nhắn tin cho nhóm" class="text-xs text-blue-600 font-bold hover:underline flex items-center"><i class="fa-regular fa-comment-dots mr-1"></i> Chat Team</button>
+                                <button onclick="openGradeModal(${realIndex}, event)" title="Chấm điểm hoàn thành" class="text-xs text-purple-600 font-bold hover:underline flex items-center bg-purple-50 px-2 py-0.5 rounded border border-purple-100"><i class="fa-solid fa-award mr-1"></i> Chấm điểm</button>
+                            </div>
                         </div>
                     `;
                 } else {
-                    statusBadge = `<span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-md border border-gray-200 text-[10px] font-bold uppercase tracking-wider">Đã đóng</span>`;
-                    actionHtml = `<button onclick="openApproveModal(${realIndex}, event)" class="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 w-8 h-8 rounded-lg shadow-sm transition"><i class="fa-solid fa-eye text-sm"></i></button>`;
+                    statusBadge = `<span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-md border border-purple-200 text-[10px] font-bold uppercase tracking-wider"><i class="fa-solid fa-check-double mr-1"></i> Hoàn thành</span>`;
+                    actionHtml = `
+                        <div class="flex flex-col items-center justify-center">
+                            <span class="text-lg font-black text-purple-600">${p.grade ? p.grade + '/10' : 'Đã duyệt'}</span>
+                            <button onclick="openApproveModal(${realIndex}, event)" class="mt-1 text-[10px] text-gray-500 hover:text-blue-600 font-bold hover:underline">Xem lại Đề cương</button>
+                        </div>
+                    `;
                 }
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-50/40 transition cursor-pointer group";
-                // Bấm vào row vẫn mở chi tiết
                 tr.onclick = (e) => openApproveModal(realIndex, e);
                 
                 tr.innerHTML = `
@@ -383,49 +479,43 @@
                             <span class="text-sm font-medium text-gray-700">${p.leaderName || 'Leader'}</span>
                         </div>
                     </td>
-                    <td class="p-4"><span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${p.category}</span></td>
+                    <td class="p-4"><span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${p.category}</span></td>
                     <td class="p-4 text-center">${statusBadge}</td>
-                    <td class="p-4 text-center">
-                        ${actionHtml}
-                    </td>
+                    <td class="p-4 text-center">${actionHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // [MỚI] TÍNH NĂNG XUẤT EXCEL
         function exportToExcel() {
-            alert("Báo cáo danh sách Đồ án và Tiến độ làm việc của các nhóm sinh viên đang được tải xuống dưới dạng file Excel (.xlsx).");
+            alert("Báo cáo danh sách Đồ án và Điểm số đang được tải xuống dưới dạng file Excel (.xlsx).");
         }
 
-        // [MỚI] LOGIC DUYỆT NHANH TRỰC TIẾP TỪ BẢNG
         function quickApprove(index, event) {
-            event.stopPropagation(); // Ngăn sự kiện click lan ra hàng (tr)
+            event.stopPropagation(); 
             allProjects[index].status = 'active';
-            allProjects[index].progress = 0; // Bắt đầu tính tiến độ
+            allProjects[index].progress = 10; 
             saveDataToLocal();
-            alert(`✅ Hệ thống đã duyệt dự án "${allProjects[index].title}"!\nThông báo đã được gửi đến tài khoản của Trưởng nhóm.`);
+            alert(`✅ Hệ thống đã duyệt dự án "${allProjects[index].title}"!\nThông báo đã được gửi đến nhóm.`);
         }
 
         function quickReject(index, event) {
             event.stopPropagation();
             if(confirm(`Bạn có muốn gửi yêu cầu Sửa đổi/Từ chối cho dự án "${allProjects[index].title}"?`)) {
                 alert("Đã gửi thông báo yêu cầu Trưởng nhóm điều chỉnh lại Đề cương.");
-                // Demo: giữ nguyên pending hoặc có thể đổi thành trạng thái 'rejected'
             }
         }
 
         function saveDataToLocal() {
-            // Lọc ra các project do sinh viên tự tạo để lưu lại vào LocalStorage
-            const customOnly = allProjects.filter(p => p.isOwner === true); 
-            // Cập nhật lại vào mảng gốc hoặc đẩy tạm lên
+            const customOnly = allProjects.filter(p => p.isOwner === true || p.status !== undefined); 
             localStorage.setItem('customProjectsData', JSON.stringify(customOnly));
-            
             updateDashboardStats();
             renderTable();
         }
 
+        // ==========================================
         // MODAL CHI TIẾT
+        // ==========================================
         const approveModal = document.getElementById('approveModal'); 
         const approveContent = approveModal.querySelector('div.bg-white');
 
@@ -433,6 +523,7 @@
             if(event) event.stopPropagation();
             const p = allProjects[index];
             currentReviewingProject = p;
+            currentReviewingIndex = index;
 
             document.getElementById('modalTitle').innerText = p.title;
             document.getElementById('modalCategory').innerText = p.category;
@@ -457,13 +548,17 @@
             if(p.status === 'pending') {
                 btnContainer.innerHTML = `
                     <button onclick="closeApproveModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition text-sm">Đóng</button>
-                    <button onclick="handleReject()" class="px-5 py-2.5 bg-red-50 text-red-600 font-bold rounded-xl border border-red-200 hover:bg-red-500 hover:text-white transition text-sm shadow-sm">Yêu cầu sửa đổi</button>
                     <button onclick="handleApprove()" class="px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition text-sm shadow-md flex items-center"><i class="fa-solid fa-check mr-2"></i> Phê duyệt Dự án</button>
+                `;
+            } else if (p.status === 'active') {
+                btnContainer.innerHTML = `
+                    <button onclick="closeApproveModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition text-sm">Đóng</button>
+                    <button onclick="openChatModal('${p.title}', null); closeApproveModal();" class="px-6 py-2.5 bg-blue-100 text-blue-700 font-bold rounded-xl hover:bg-blue-200 transition text-sm flex items-center border border-blue-200"><i class="fa-regular fa-comment-dots mr-2"></i> Chat với Nhóm</button>
+                    <button onclick="openGradeModal(${index}, null); closeApproveModal();" class="px-6 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition text-sm shadow-md flex items-center"><i class="fa-solid fa-award mr-2"></i> Chấm điểm</button>
                 `;
             } else {
                 btnContainer.innerHTML = `
                     <button onclick="closeApproveModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition text-sm">Đóng</button>
-                    <button onclick="alert('Mở báo cáo tiến độ chi tiết của nhóm...')" class="px-6 py-2.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition text-sm shadow-md flex items-center"><i class="fa-solid fa-chart-line mr-2"></i> Xem Báo Cáo Tiến Độ</button>
                 `;
             }
 
@@ -481,20 +576,186 @@
         function handleApprove() {
             if(currentReviewingProject) {
                 currentReviewingProject.status = 'active'; 
-                currentReviewingProject.progress = 0;
+                currentReviewingProject.progress = 10;
                 saveDataToLocal();
-                alert(`✅ Đã phê duyệt dự án "${currentReviewingProject.title}"!\nDự án sẽ chính thức xuất hiện trên Bảng tin của Sinh viên.`);
+                alert(`✅ Đã phê duyệt dự án "${currentReviewingProject.title}"!`);
                 closeApproveModal();
             }
         }
 
-        function handleReject() {
-            alert("Đã gửi thông báo yêu cầu Trưởng nhóm bổ sung thêm thông tin chi tiết vào hộp thư.");
-            closeApproveModal();
+        // ==========================================
+        // [MỚI] LOGIC CHẤM ĐIỂM DỰ ÁN
+        // ==========================================
+        const gradeModal = document.getElementById('gradeModal');
+        const gradeContent = document.getElementById('gradeContent');
+        let gradingIndex = null;
+
+        function openGradeModal(index, event) {
+            if(event) event.stopPropagation();
+            gradingIndex = index;
+            document.getElementById('gradeProjectName').innerText = "Dự án: " + allProjects[index].title;
+            document.getElementById('gradeScore').value = '';
+            document.getElementById('gradeComment').value = '';
+
+            document.body.classList.add('modal-active');
+            gradeModal.classList.remove('hidden'); gradeModal.classList.add('flex');
+            setTimeout(() => { gradeContent.classList.remove('scale-95', 'opacity-0'); gradeContent.classList.add('scale-100', 'opacity-100'); }, 10);
         }
+
+        function closeGradeModal() {
+            document.body.classList.remove('modal-active');
+            gradeContent.classList.remove('scale-100', 'opacity-100'); gradeContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { gradeModal.classList.remove('flex'); gradeModal.classList.add('hidden'); }, 300);
+        }
+
+        function submitGrade(event) {
+            event.preventDefault();
+            const score = parseFloat(document.getElementById('gradeScore').value);
+            if(gradingIndex !== null) {
+                allProjects[gradingIndex].status = 'completed'; // Chuyển trạng thái hoàn thành
+                allProjects[gradingIndex].progress = 100;
+                allProjects[gradingIndex].grade = score;
+                saveDataToLocal();
+                
+                alert(`🏆 Hoàn tất! Dự án đã được chấm ${score}/10 điểm.`);
+                closeGradeModal();
+            }
+        }
+
+        // ==========================================
+        // [MỚI] LOGIC CHAT CHO GIẢNG VIÊN
+        // ==========================================
+        const chatModal = document.getElementById('chatModal');
+        const chatContent = document.getElementById('chatContent');
+        const chatListSidebar = document.getElementById('chatListSidebar');
+        const chatMessagesArea = document.getElementById('chatMessagesArea');
+        const chatInput = document.getElementById('chatInputMessage');
+        const chatActiveState = document.getElementById('chatActiveState');
+        const chatEmptyState = document.getElementById('chatEmptyState');
+
+        let currentChatGroupTitle = '';
+
+        function renderChatSidebar() {
+            chatListSidebar.innerHTML = '';
+            // Chỉ lấy các dự án đang Active hoặc Completed
+            const activeGroups = allProjects.filter(p => p.status === 'active' || p.status === 'completed');
+            
+            if(activeGroups.length === 0) {
+                chatListSidebar.innerHTML = `<p class="p-4 text-xs text-gray-500 italic text-center">Chưa có dự án nào đang hoạt động.</p>`;
+                return;
+            }
+
+            activeGroups.forEach(p => {
+                const isActive = (currentChatGroupTitle === p.title);
+                const bgClass = isActive ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-gray-100 border-l-4 border-transparent';
+                
+                const html = `
+                    <div onclick="selectGroupChat('${p.title}')" class="p-3 border-b border-gray-100 flex items-center gap-3 cursor-pointer transition ${bgClass}">
+                        <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-sm"><i class="fa-solid fa-users text-xs"></i></div>
+                        <div class="hidden md:block flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-gray-800 truncate">${p.title}</h4>
+                            <p class="text-[10px] text-gray-500 truncate">Leader: ${p.leaderName}</p>
+                        </div>
+                    </div>
+                `;
+                chatListSidebar.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function selectGroupChat(title) {
+            currentChatGroupTitle = title;
+            renderChatSidebar(); // Cập nhật lại màu active ở sidebar
+
+            // Đổi Header
+            document.getElementById('chatHeaderTitle').innerText = "Nhóm: " + title;
+
+            // Fake data tin nhắn
+            chatMessagesArea.innerHTML = `
+                <div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 bg-gray-200/70 px-3 py-1 rounded-full uppercase tracking-wider">Hôm qua</span></div>
+                <div class="flex items-end gap-2">
+                    <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-sm"><i class="fa-solid fa-users"></i></div>
+                    <div class="bg-white border border-gray-200 p-3.5 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] sm:max-w-[75%]">
+                        <p class="text-xs font-bold text-blue-600 mb-1">Nhóm ${title}</p>
+                        <p class="text-sm text-gray-700 leading-relaxed">Dạ thưa Thầy/Cô, nhóm em đã chốt xong các chức năng chính. Hiện tại đang bắt đầu vẽ Wireframe ạ. Bọn em sẽ gửi file qua Drive sớm nhất.</p>
+                        <span class="text-[10px] text-gray-400 block mt-1 text-right">20:15</span>
+                    </div>
+                </div>
+            `;
+            
+            chatEmptyState.classList.add('hidden');
+            chatActiveState.classList.remove('hidden');
+            chatActiveState.classList.add('flex');
+            
+            chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+            chatInput.focus();
+        }
+
+        function openChatModal(targetTitle = null, event = null) {
+            if(event) event.stopPropagation();
+
+            document.body.classList.add('modal-active');
+            chatModal.classList.remove('hidden');
+            chatModal.classList.add('flex');
+            
+            if (targetTitle && targetTitle !== 'all') {
+                selectGroupChat(targetTitle);
+            } else {
+                // Nếu bấm nút bong bóng chung thì hiện Empty State
+                currentChatGroupTitle = '';
+                renderChatSidebar();
+                chatEmptyState.classList.remove('hidden');
+                chatActiveState.classList.add('hidden');
+                chatActiveState.classList.remove('flex');
+            }
+
+            setTimeout(() => { 
+                chatContent.classList.remove('scale-95', 'opacity-0'); 
+                chatContent.classList.add('scale-100', 'opacity-100'); 
+            }, 10);
+        }
+
+        function closeChatModal() {
+            document.body.classList.remove('modal-active');
+            chatContent.classList.remove('scale-100', 'opacity-100'); 
+            chatContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { 
+                chatModal.classList.remove('flex'); 
+                chatModal.classList.add('hidden'); 
+            }, 300);
+        }
+
+        function sendChatMessage(event) {
+            event.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message || !currentChatGroupTitle) return;
+
+            const now = new Date();
+            const timeString = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
+
+            const newMsgHTML = `
+                <div class="flex items-end gap-2 justify-end fade-in-section">
+                    <div class="bg-blue-600 text-white border border-blue-700 p-3.5 rounded-2xl rounded-br-none shadow-sm max-w-[85%] sm:max-w-[75%]">
+                        <p class="text-sm leading-relaxed">${message}</p>
+                        <span class="text-[10px] text-blue-200 block mt-1 text-right">${timeString}</span>
+                    </div>
+                </div>
+            `;
+
+            chatMessagesArea.insertAdjacentHTML('beforeend', newMsgHTML);
+            chatInput.value = '';
+            chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+        }
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage(e);
+            }
+        });
 
         function clearTestData() {
             if(confirm('Bạn có chắc chắn muốn Đăng xuất hệ thống Giảng viên?')) {
+                localStorage.removeItem('userProfileData');
                 window.location.href = "index.html"; 
             }
         }

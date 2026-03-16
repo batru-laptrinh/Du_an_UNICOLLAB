@@ -13,18 +13,18 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
         
-        /* Hiệu ứng Kanban */
         .kanban-col { min-height: 500px; }
         .task-card { cursor: grab; transition: transform 0.2s, box-shadow 0.2s; }
         .task-card:active { cursor: grabbing; transform: scale(1.02); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
         .task-card.dragging { opacity: 0.5; }
         .drag-over { background-color: #e2e8f0; border: 2px dashed #94a3b8; }
         
-        /* Toggle Switch (Nút gạt bật/tắt) */
         .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
         .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
         .toggle-checkbox { right: 4px; z-index: 1; border-color: #e2e8f0; transition: all 0.3s; }
         .toggle-label { background-color: #e2e8f0; transition: all 0.3s; }
+
+        .modal-active { overflow: hidden; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -46,13 +46,14 @@
             </div>
             
             <div class="flex items-center space-x-5">
-                <button class="text-gray-400 hover:text-white transition relative group" title="Thông báo hệ thống">
+                <button onclick="alert('Bạn không có thông báo hệ thống nào mới.')" class="text-gray-400 hover:text-white transition relative group" title="Thông báo hệ thống">
                     <i class="fa-regular fa-bell text-xl"></i>
                     <span class="absolute top-0 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border-2 border-gray-900"></span>
                 </button>
-                <div class="flex items-center space-x-2 border border-gray-700 py-1.5 px-3 rounded-full bg-gray-800">
-                    <div id="leaderAvatar" class="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs overflow-hidden shrink-0">L</div>
-                    <span id="leaderName" class="text-sm font-bold text-gray-300 hidden sm:block">Leader</span>
+                
+                <div class="flex items-center border border-gray-700 p-1 rounded-full bg-gray-800 shadow-sm cursor-pointer hover:bg-gray-700 transition" onclick="leaderLogout()" title="Bấm để đăng xuất">
+                    <div id="leaderAvatar" class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">L</div>
+                    <span id="leaderName" class="hidden">Leader</span>
                 </div>
             </div>
         </div>
@@ -96,7 +97,7 @@
                     </button>
                 </div>
                 
-                <button onclick="alert('Đang mở Box Chat của nhóm... Tính năng này đang được phát triển!')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2.5 px-4 rounded-xl transition flex items-center shadow-sm text-sm border border-blue-200 w-full sm:w-auto justify-center">
+                <button onclick="openChatModal()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2.5 px-4 rounded-xl transition flex items-center shadow-sm text-sm border border-blue-200 w-full sm:w-auto justify-center">
                     <i class="fa-solid fa-comment-dots mr-2 text-lg"></i> Chat Team
                 </button>
             </div>
@@ -110,7 +111,6 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 max-w-4xl mx-auto">
                     <div class="flex items-center justify-between border-b border-gray-100 pb-5 mb-6">
                         <h3 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-book-open text-blue-500 mr-2"></i> Chi Tiết Dự Án</h3>
-                        <button onclick="switchTab('settings')" class="text-sm font-bold text-gray-500 hover:text-blue-600 transition"><i class="fa-solid fa-pen-to-square mr-1"></i> Chỉnh sửa</button>
                     </div>
                     
                     <div class="space-y-8">
@@ -130,9 +130,9 @@
                             <div>
                                 <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Tài nguyên & Liên kết</h4>
                                 <ul class="space-y-3">
-                                    <li><a href="#" class="flex items-center text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg border border-blue-100 transition"><i class="fa-brands fa-google-drive w-6 text-xl"></i> Thư mục Google Drive</a></li>
-                                    <li><a href="#" class="flex items-center text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg border border-purple-100 transition"><i class="fa-brands fa-figma w-6 text-xl"></i> File thiết kế Figma</a></li>
-                                    <li><a href="#" class="flex items-center text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg border border-gray-200 transition"><i class="fa-brands fa-github w-6 text-xl"></i> Kho chứa mã nguồn GitHub</a></li>
+                                    <li><a href="javascript:void(0)" onclick="alert('📂 Đang mở thư mục Google Drive chung của dự án...'); return false;" class="flex items-center text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-xl border border-blue-100 transition shadow-sm font-medium"><i class="fa-brands fa-google-drive w-6 text-xl"></i> Thư mục Google Drive</a></li>
+                                    <li><a href="javascript:void(0)" onclick="alert('🎨 Đang tải file thiết kế Figma của dự án...'); return false;" class="flex items-center text-purple-600 hover:bg-purple-50 px-4 py-3 rounded-xl border border-purple-100 transition shadow-sm font-medium"><i class="fa-brands fa-figma w-6 text-xl"></i> File thiết kế Figma</a></li>
+                                    <li><a href="javascript:void(0)" onclick="alert('💻 Đang chuyển hướng sang kho chứa mã nguồn GitHub...'); return false;" class="flex items-center text-gray-700 hover:bg-gray-100 px-4 py-3 rounded-xl border border-gray-200 transition shadow-sm font-medium"><i class="fa-brands fa-github w-6 text-xl"></i> Kho chứa mã nguồn GitHub</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -141,7 +141,6 @@
             </div>
 
             <div id="content-board" class="flex-1 flex gap-6 h-full min-w-[900px] pb-4 fade-in-section">
-                
                 <div class="flex flex-col w-1/3 bg-gray-100/80 border border-gray-200 rounded-2xl overflow-hidden shrink-0">
                     <div class="p-4 border-b border-gray-200 bg-gray-100 flex justify-between items-center">
                         <h3 class="font-bold text-gray-700 flex items-center"><span class="w-3 h-3 rounded-full bg-gray-400 mr-2"></span> Cần làm (To Do)</h3>
@@ -152,7 +151,7 @@
                         <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400 group" draggable="true" ondragstart="drag(event)" id="task1">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase">Phân tích</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-ellipsis"></i></div>
+                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
                             </div>
                             <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Viết tài liệu đặc tả yêu cầu (SRS)</h4>
                             <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
@@ -164,7 +163,7 @@
                         <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400 group" draggable="true" ondragstart="drag(event)" id="task2">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded uppercase">Thiết kế</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-ellipsis"></i></div>
+                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
                             </div>
                             <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Thiết kế UI/UX trang chủ Figma</h4>
                             <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
@@ -185,11 +184,10 @@
                         <span class="bg-blue-200 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full" id="count-inprogress">1</span>
                     </div>
                     <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-inprogress" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-                        
                         <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500 group" draggable="true" ondragstart="drag(event)" id="task3">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded uppercase">Dev</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-ellipsis"></i></div>
+                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
                             </div>
                             <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">Khởi tạo Database SQL Server</h4>
                             <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
@@ -197,7 +195,6 @@
                                 <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition">L</button>
                             </div>
                         </div>
-
                     </div>
                     <div class="p-3 bg-blue-50/30 border-t border-blue-100">
                         <button onclick="openTaskModal('col-inprogress')" class="w-full py-2 text-sm text-blue-500 font-bold hover:text-blue-700 hover:bg-blue-100 rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Thêm công việc</button>
@@ -210,11 +207,10 @@
                         <span class="bg-green-200 text-green-800 text-xs font-bold px-2 py-0.5 rounded-full" id="count-done">1</span>
                     </div>
                     <div class="kanban-col flex-1 p-3 overflow-y-auto custom-scrollbar space-y-3" id="col-done" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-                        
                         <div class="task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-green-500 group opacity-70" draggable="true" ondragstart="drag(event)" id="task4">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded uppercase">Hệ thống</div>
-                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-ellipsis"></i></div>
+                                <div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div>
                             </div>
                             <h4 class="font-bold text-gray-500 text-sm mb-2 line-through">Lập nhóm trên UNICOLLAB</h4>
                             <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
@@ -222,7 +218,6 @@
                                 <button onclick="openAssignModal(this)" class="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-orange-300 transition">L</button>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -235,7 +230,8 @@
                         <p class="text-sm text-gray-500">Xem xét và duyệt thành viên vào dự án của bạn.</p>
                     </div>
                     <div class="bg-gray-100 rounded-lg p-1 flex text-sm font-bold">
-                        <button class="px-4 py-1.5 bg-white text-blue-600 shadow-sm rounded-md">Chờ duyệt (<span id="waitCount">1</span>)</button>
+                        <button onclick="alert('Đang hiển thị các đơn ứng tuyển chưa được duyệt.')" class="px-4 py-1.5 bg-white text-blue-600 shadow-sm rounded-md">Chờ duyệt (<span id="waitCount">1</span>)</button>
+                        <button onclick="alert('Tính năng xem danh sách lịch sử duyệt đang được cập nhật.')" class="px-4 py-1.5 text-gray-500 hover:text-gray-800">Đã duyệt (0)</button>
                     </div>
                 </div>
 
@@ -319,6 +315,11 @@
 
         </div>
     </main>
+    
+    <button onclick="openChatModal()" class="fixed bottom-8 right-8 w-14 h-14 bg-[#0a7cff] text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:bg-blue-700 hover:scale-110 transition-all duration-300 flex items-center justify-center z-40 group">
+        <i class="fa-brands fa-facebook-messenger text-2xl group-hover:animate-bounce"></i>
+        <span class="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full"></span>
+    </button>
 
     <div id="taskModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative p-6 border-t-4 border-blue-500">
@@ -348,29 +349,80 @@
         <div class="bg-white rounded-2xl w-full max-w-xs overflow-hidden shadow-2xl relative p-6">
             <button onclick="closeAssignModal()" class="absolute top-4 right-4 w-6 h-6 bg-gray-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-sm"></i></button>
             <h2 class="text-lg font-bold text-gray-800 mb-4">Giao việc cho...</h2>
+            <div class="space-y-2" id="assignMemberList"></div>
+        </div>
+    </div>
+
+    <div id="chatModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-2 sm:p-5">
+        <div class="bg-white rounded-2xl w-full max-w-5xl h-[85vh] sm:h-[80vh] shadow-2xl flex overflow-hidden relative transition-all duration-300 scale-95 opacity-0" id="chatContent">
             
-            <div class="space-y-2" id="assignMemberList">
+            <div class="w-20 md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col shrink-0">
+                <div class="p-4 border-b border-gray-200 hidden md:block bg-white">
+                    <h2 class="text-xl font-extrabold text-gray-800">Tin nhắn</h2>
+                    <div class="mt-4 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" placeholder="Tìm kiếm..." class="w-full pl-10 pr-3 py-2.5 bg-gray-100 border-none rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
                 </div>
+                
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div id="chat-tab-team" onclick="switchChatRoom('team')" class="chat-tab p-3 border-b border-gray-100 flex items-center gap-3 bg-blue-50 border-l-4 border-l-blue-600 cursor-pointer transition">
+                        <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-sm"><i class="fa-solid fa-users"></i></div>
+                        <div class="hidden md:block flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-gray-800 truncate" id="chatGroupSidebarName">Dự án của bạn</h4>
+                            <p class="text-xs text-gray-500 truncate font-medium" id="chatGroupPreview"><span class="text-blue-600 font-bold">Hải:</span> Chào mọi người nhé!</p>
+                        </div>
+                    </div>
+                    <div id="chat-tab-teacher" onclick="switchChatRoom('teacher')" class="chat-tab p-3 border-b border-gray-100 flex items-center gap-3 hover:bg-gray-100 border-l-4 border-transparent cursor-pointer transition">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-bold shrink-0">GV</div>
+                        <div class="hidden md:block flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-gray-800 truncate">Giảng viên HD</h4>
+                            <p class="text-xs text-gray-500 truncate" id="chatTeacherPreview">Tuần này các nhóm nộp báo cáo...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col bg-white h-full relative">
+                <div class="h-16 border-b border-gray-200 flex justify-between items-center px-4 md:px-6 bg-white shrink-0 shadow-sm z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-sm" id="chatHeaderIcon"><i class="fa-solid fa-users"></i></div>
+                        <div>
+                            <h3 class="text-base font-extrabold text-gray-800" id="chatHeaderTitle">Đang tải...</h3>
+                            <p class="text-xs text-green-500 font-bold flex items-center mt-0.5" id="chatHeaderStatus"><span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Sẵn sàng thảo luận</p>
+                        </div>
+                    </div>
+                    <button onclick="closeChatModal()" class="w-8 h-8 bg-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#f8fafc] custom-scrollbar" id="chatMessagesArea">
+                    </div>
+
+                <div class="p-3 md:p-4 bg-white border-t border-gray-200 shrink-0">
+                    <form onsubmit="sendChatMessage(event)" class="flex items-end gap-2 bg-gray-100 rounded-3xl p-1.5 border border-gray-200 focus-within:ring-1 focus-within:ring-blue-500 focus-within:bg-white transition">
+                        <button type="button" class="w-10 h-10 text-gray-400 hover:text-blue-600 shrink-0 flex items-center justify-center transition text-xl mb-0.5"><i class="fa-solid fa-circle-plus"></i></button>
+                        <textarea id="chatInputMessage" rows="1" placeholder="Soạn tin nhắn..." class="flex-1 bg-transparent border-none px-2 py-2.5 text-sm outline-none resize-none custom-scrollbar max-h-32 min-h-[40px] text-gray-700"></textarea>
+                        <button type="submit" class="w-10 h-10 bg-blue-600 text-white rounded-full shrink-0 flex items-center justify-center hover:bg-blue-700 transition shadow-sm mb-0.5"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            
         </div>
     </div>
 
     <script>
         let currentTargetCol = 'col-todo'; 
-        let currentAssignBtn = null; // Lưu lại nút gán việc đang được click
+        let currentAssignBtn = null; 
 
-        // Mảng lưu Thành viên hiện tại trong nhóm (Leader mặc định)
         let teamMembers = [
             { id: 'm1', name: 'Leader', initial: 'L', color: 'orange' }
         ];
 
-        // 1. KHÔI PHỤC DỮ LIỆU TỪ TRANG MATCHING.HTML
         document.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('userProfileData');
             if(savedUser) {
                 const userData = JSON.parse(savedUser);
-                document.getElementById('leaderName').innerText = userData.name;
                 document.getElementById('leaderAvatar').innerText = userData.name.charAt(0).toUpperCase();
-                // Cập nhật tên Leader trong mảng teamMembers
                 teamMembers[0].name = userData.name + " (Leader)";
                 teamMembers[0].initial = userData.name.charAt(0).toUpperCase();
             }
@@ -379,10 +431,11 @@
             if(leaderData) {
                 const projData = JSON.parse(leaderData);
                 document.getElementById('projTitle').innerText = projData.title;
-                document.getElementById('settingProjName').value = projData.title; // Đổ vào form Settings
+                document.getElementById('settingProjName').value = projData.title;
                 document.getElementById('projCategory').innerText = projData.category;
                 
-                // Đổ mô tả vào Tab Overview & Settings nếu có (Tự fake nếu không có)
+                document.getElementById('chatGroupSidebarName').innerText = projData.title;
+                
                 const dummyDesc = "Đây là dự án liên ngành rèn nghề thực tế. Team đang cần sự nhiệt huyết để hoàn thành đúng deadline.";
                 document.getElementById('overviewDesc').innerText = dummyDesc;
                 document.getElementById('settingProjDesc').value = dummyDesc;
@@ -392,10 +445,17 @@
                 document.getElementById('projTitle').innerText = "Hệ thống Quản lý Đồ án UNICOLLAB";
                 document.getElementById('settingProjName').value = "Hệ thống Quản lý Đồ án UNICOLLAB";
                 document.getElementById('projCategory').innerText = "DỰ ÁN MẪU";
+                document.getElementById('chatGroupSidebarName').innerText = "Dự án Mẫu";
             }
         });
 
-        // 2. LOGIC ĐỔI TABS
+        function leaderLogout() {
+            if(confirm('Bạn có chắc chắn muốn rời khỏi Không gian Leader và Đăng xuất?')) {
+                localStorage.removeItem('userProfileData');
+                window.location.href = 'index.html';
+            }
+        }
+
         function switchTab(tabName) {
             ['overview', 'board', 'candidates', 'settings'].forEach(t => {
                 const btn = document.getElementById('tab-' + t);
@@ -416,7 +476,6 @@
             else activeContent.classList.replace('hidden', 'block');
         }
 
-        // 3. LOGIC KÉO THẢ (DRAG & DROP KANBAN)
         let draggedItem = null;
         function drag(event) { draggedItem = event.target; event.dataTransfer.setData("text/plain", event.target.id); setTimeout(() => { event.target.classList.add('dragging'); }, 0); }
         function allowDrop(event) { event.preventDefault(); const col = event.target.closest('.kanban-col'); if(col) col.classList.add('drag-over'); }
@@ -439,7 +498,6 @@
         }
         document.addEventListener('dragend', (e) => { if(draggedItem) draggedItem.classList.remove('dragging'); });
 
-        // 4. LOGIC THÊM TASK
         function openTaskModal(colId) {
             currentTargetCol = colId;
             document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex');
@@ -457,7 +515,7 @@
             newTask.className = `task-card bg-white p-4 rounded-xl shadow-sm border border-gray-200 border-l-4 ${borderColor} group`;
             newTask.draggable = true; newTask.id = newId; newTask.ondragstart = drag;
             newTask.innerHTML = `
-                <div class="flex justify-between items-start mb-2"><div class="text-[10px] font-bold text-${tagColor}-600 bg-${tagColor}-50 px-2 py-0.5 rounded uppercase">${tag}</div><div class="text-gray-400 hover:text-gray-600 cursor-pointer"><i class="fa-solid fa-ellipsis"></i></div></div>
+                <div class="flex justify-between items-start mb-2"><div class="text-[10px] font-bold text-${tagColor}-600 bg-${tagColor}-50 px-2 py-0.5 rounded uppercase">${tag}</div><div class="text-gray-400 hover:text-gray-600 cursor-pointer" onclick="alert('Tính năng chỉnh sửa / xóa thẻ công việc đang được cập nhật.')"><i class="fa-solid fa-ellipsis"></i></div></div>
                 <h4 class="font-bold text-gray-800 text-sm mb-2 group-hover:text-blue-600 transition">${title}</h4>
                 <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50"><div class="flex items-center text-xs text-gray-500 font-medium"><i class="fa-regular fa-clock mr-1 text-gray-400"></i> ${deadline}</div>
                 <button onclick="openAssignModal(this)" class="w-6 h-6 border border-dashed border-gray-400 text-gray-500 rounded-full flex items-center justify-center font-bold text-[10px] hover:bg-gray-100 transition" title="Chưa phân công - Bấm để gán"><i class="fa-solid fa-user-plus"></i></button></div>
@@ -466,30 +524,23 @@
             document.getElementById('taskModal').classList.add('hidden'); event.target.reset();
         }
 
-        // 5. [MỚI] LOGIC CHẤP NHẬN/TỪ CHỐI ỨNG VIÊN VÀ TEAM MEMBERS
         function acceptCandidate() {
-            // Hiệu ứng ẩn đơn
             document.getElementById('candidateCard').style.display = 'none';
             document.getElementById('emptyCandidate').classList.remove('hidden');
             document.getElementById('emptyCandidate').classList.add('flex');
             
-            // Đổi số đếm Badge
             document.getElementById('candidateBadge').classList.add('hidden');
             document.getElementById('waitCount').innerText = "0";
 
-            // Thêm thành viên Hải vào mảng Team
             teamMembers.push({ id: 'm2', name: 'Phạm Minh Hải', initial: 'H', color: 'indigo' });
             
-            // Cập nhật giao diện Team Members ở góc phải
             const teamList = document.getElementById('teamMembersList');
             const newAvatar = document.createElement('div');
             newAvatar.className = "inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-500 text-white flex items-center justify-center text-xs font-bold shadow-sm fade-in-section";
             newAvatar.title = "Phạm Minh Hải";
             newAvatar.innerText = "H";
-            // Chèn vào trước nút "Thêm"
             teamList.insertBefore(newAvatar, teamList.lastElementChild);
 
-            // Bắn Alert cho Leader
             alert("🎉 Đã Duyệt! Phạm Minh Hải đã trở thành thành viên của nhóm. Bây giờ bạn có thể phân công công việc cho thành viên này trên bảng Kanban.");
         }
 
@@ -503,13 +554,11 @@
             }
         }
 
-        // 6. [MỚI] LOGIC GÁN NGƯỜI LÀM TASK (ASSIGN)
         function openAssignModal(btnElement) {
-            currentAssignBtn = btnElement; // Ghi nhớ thẻ nào đang cần gán
+            currentAssignBtn = btnElement; 
             const listDiv = document.getElementById('assignMemberList');
-            listDiv.innerHTML = ''; // Xóa list cũ
+            listDiv.innerHTML = ''; 
 
-            // Vẽ danh sách member hiện tại
             teamMembers.forEach(mem => {
                 const item = document.createElement('div');
                 item.className = "flex items-center space-x-3 p-2 hover:bg-blue-50 rounded-lg cursor-pointer transition border border-transparent hover:border-blue-100";
@@ -521,7 +570,6 @@
                 listDiv.appendChild(item);
             });
 
-            // Thêm nút Bỏ gán (Unassign)
             listDiv.innerHTML += `
                 <div class="mt-2 border-t border-gray-100 pt-2">
                     <button onclick="unassignTask()" class="w-full py-2 text-sm text-red-500 font-medium hover:bg-red-50 rounded-lg transition"><i class="fa-solid fa-user-xmark mr-2"></i> Bỏ phân công</button>
@@ -539,7 +587,6 @@
 
         function assignTaskTo(member) {
             if (currentAssignBtn) {
-                // Sửa style của nút Assignee hiện tại
                 currentAssignBtn.className = `w-6 h-6 bg-${member.color}-100 text-${member.color}-600 rounded-full flex items-center justify-center font-bold text-[10px] hover:ring-2 hover:ring-${member.color}-300 transition`;
                 currentAssignBtn.innerHTML = member.initial;
                 currentAssignBtn.title = member.name;
@@ -556,15 +603,21 @@
             closeAssignModal();
         }
 
-        // Cài đặt: Xóa dự án
         function confirmDeleteProject() {
             if(confirm("CẢNH BÁO!\nBạn đang thực hiện thao tác xóa vĩnh viễn dự án. Hành động này không thể hoàn tác.\nBạn có chắc chắn muốn tiếp tục?")) {
-                alert("Dự án đã được xóa. Quay trở về trang chủ.");
+                const currentProjName = document.getElementById('projTitle').innerText;
+                const savedCustomProjects = localStorage.getItem('customProjectsData');
+                if(savedCustomProjects) {
+                    let customProjects = JSON.parse(savedCustomProjects);
+                    customProjects = customProjects.filter(p => p.title !== currentProjName);
+                    localStorage.setItem('customProjectsData', JSON.stringify(customProjects));
+                }
+                localStorage.removeItem('leaderProjectData');
+                alert("✅ Dự án đã được xóa vĩnh viễn khỏi hệ thống.\nBạn sẽ được đưa về Trang chủ.");
                 window.location.href = "matching.html";
             }
         }
 
-        // Cài đặt: Nút gạt Toggle Recruit
         const toggle = document.getElementById('recruitToggle');
         const badge = document.getElementById('projStatusBadge');
         toggle.addEventListener('change', function() {
@@ -574,6 +627,144 @@
             } else {
                 badge.className = "bg-gray-100 text-gray-500 px-2.5 py-1 rounded-md text-xs font-bold flex items-center";
                 badge.innerHTML = `<i class="fa-solid fa-lock text-[10px] mr-1.5"></i> Đã đóng`;
+            }
+        });
+
+        // ==========================================
+        // LOGIC XỬ LÝ CHAT TEAM & CHUYỂN PHÒNG
+        // ==========================================
+        const chatModal = document.getElementById('chatModal');
+        const chatContent = document.getElementById('chatContent');
+        const chatMessagesArea = document.getElementById('chatMessagesArea');
+        const chatInput = document.getElementById('chatInputMessage');
+
+        // Biến lưu trạng thái phòng đang chat và lịch sử
+        let currentChatRoom = 'team';
+        const chatData = {
+            team: `
+                <div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 bg-gray-200/70 px-3 py-1 rounded-full uppercase tracking-wider">Hôm nay</span></div>
+                <div class="flex items-end gap-2">
+                    <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">H</div>
+                    <div class="bg-white border border-gray-200 p-3.5 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] sm:max-w-[75%]">
+                        <p class="text-xs font-bold text-indigo-600 mb-1">Phạm Minh Hải</p>
+                        <p class="text-sm text-gray-700 leading-relaxed">Chào Leader, mình đã được duyệt vào team. Tối nay mình bắt đầu setup SQL Server cho hệ thống luôn nha! Cần tài liệu gì Leader gửi lên đây giúp mình với.</p>
+                        <span class="text-[10px] text-gray-400 block mt-1 text-right">09:15</span>
+                    </div>
+                </div>
+            `,
+            teacher: `
+                <div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 bg-gray-200/70 px-3 py-1 rounded-full uppercase tracking-wider">Hôm qua</span></div>
+                <div class="flex items-end gap-2">
+                    <div class="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">GV</div>
+                    <div class="bg-white border border-gray-200 p-3.5 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] sm:max-w-[75%]">
+                        <p class="text-xs font-bold text-gray-600 mb-1">Giảng viên Hướng dẫn</p>
+                        <p class="text-sm text-gray-700 leading-relaxed">Chào nhóm. Tuần này các nhóm nộp báo cáo tiến độ Sprint 1 nhé. Nhóm mình đã lên được sườn Database chưa?</p>
+                        <span class="text-[10px] text-gray-400 block mt-1 text-right">14:30</span>
+                    </div>
+                </div>
+            `
+        };
+
+        function switchChatRoom(room) {
+            currentChatRoom = room;
+            
+            // Xóa hiệu ứng Active ở tất cả Tab
+            document.querySelectorAll('.chat-tab').forEach(tab => {
+                tab.classList.remove('bg-blue-50', 'border-l-blue-600');
+                tab.classList.add('hover:bg-gray-100', 'border-transparent');
+            });
+            
+            // Thêm hiệu ứng Active vào Tab đang chọn
+            const activeTab = document.getElementById('chat-tab-' + room);
+            activeTab.classList.remove('hover:bg-gray-100', 'border-transparent');
+            activeTab.classList.add('bg-blue-50', 'border-l-blue-600');
+            
+            // Đổi Header của khung Chat bên phải
+            const headerTitle = document.getElementById('chatHeaderTitle');
+            const headerIcon = document.getElementById('chatHeaderIcon');
+            const headerStatus = document.getElementById('chatHeaderStatus');
+
+            if(room === 'team') {
+                headerTitle.innerText = "Team: " + (document.getElementById('projTitle').innerText || 'Dự án');
+                headerIcon.innerHTML = `<i class="fa-solid fa-users"></i>`;
+                headerIcon.className = "w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-sm";
+                headerStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Sẵn sàng thảo luận`;
+                headerStatus.className = "text-xs text-green-500 font-bold flex items-center mt-0.5";
+            } else {
+                headerTitle.innerText = "Giảng viên Hướng dẫn";
+                headerIcon.innerHTML = `GV`;
+                headerIcon.className = "w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold shadow-sm";
+                headerStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400 mr-1.5"></span> Đang ngoại tuyến`;
+                headerStatus.className = "text-xs text-gray-400 font-bold flex items-center mt-0.5";
+            }
+            
+            // Đổ lịch sử tin nhắn của phòng đó ra
+            chatMessagesArea.innerHTML = chatData[room];
+            chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+            chatInput.focus();
+        }
+
+        function openChatModal() {
+            document.body.classList.add('modal-active');
+            chatModal.classList.remove('hidden');
+            chatModal.classList.add('flex');
+            
+            // Gọi hàm mở tab Team mặc định
+            switchChatRoom('team');
+
+            setTimeout(() => { 
+                chatContent.classList.remove('scale-95', 'opacity-0'); 
+                chatContent.classList.add('scale-100', 'opacity-100'); 
+            }, 10);
+        }
+
+        function closeChatModal() {
+            document.body.classList.remove('modal-active');
+            chatContent.classList.remove('scale-100', 'opacity-100'); 
+            chatContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { 
+                chatModal.classList.remove('flex'); 
+                chatModal.classList.add('hidden'); 
+            }, 300);
+        }
+
+        function sendChatMessage(event) {
+            event.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            const now = new Date();
+            const timeString = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
+
+            const newMsgHTML = `
+                <div class="flex items-end gap-2 justify-end fade-in-section">
+                    <div class="bg-blue-600 text-white border border-blue-700 p-3.5 rounded-2xl rounded-br-none shadow-sm max-w-[85%] sm:max-w-[75%]">
+                        <p class="text-sm leading-relaxed">${message}</p>
+                        <span class="text-[10px] text-blue-200 block mt-1 text-right">${timeString}</span>
+                    </div>
+                </div>
+            `;
+
+            chatMessagesArea.insertAdjacentHTML('beforeend', newMsgHTML);
+            
+            // Lưu lại lịch sử để khi chuyển qua lại không bị mất
+            chatData[currentChatRoom] = chatMessagesArea.innerHTML; 
+            
+            // Cập nhật dòng text nhỏ nhỏ ở Sidebar
+            if(currentChatRoom === 'team') {
+                document.getElementById('chatGroupPreview').innerHTML = `<span class="text-gray-800 font-bold">Bạn:</span> ` + message;
+            } else {
+                document.getElementById('chatTeacherPreview').innerHTML = `<span class="text-gray-800 font-bold">Bạn:</span> ` + message;
+            }
+
+            chatInput.value = '';
+            chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+        }
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage(e);
             }
         });
     </script>

@@ -695,12 +695,12 @@
         });
 
         function clearTestData() {
-            if(confirm('Bạn có chắc chắn muốn Đăng xuất?')) {
-                localStorage.clear(); 
-                updateMenuVisibility(false);
-                window.location.reload(); 
-            }
-        }
+    if(confirm('Bạn có chắc chắn muốn Đăng xuất?')) {
+        // Chỉ xóa thông tin phiên đăng nhập hiện tại, GIỮ NGUYÊN tài khoản và dự án
+        localStorage.removeItem('userProfileData'); 
+        window.location.href = "index.html"; // Đá văng ra ngoài trang Đăng nhập
+    }
+}
 
         function renderProjectCard(p) {
             let skillsHtml = ''; 

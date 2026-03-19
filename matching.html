@@ -37,7 +37,7 @@
                 <a href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="text-blue-600 font-bold border-b-2 border-blue-600 pb-1 px-2">Dự án đang tuyển</a>
                 
                 <a id="leaderAreaBtn" href="kanban.html" class="hidden text-orange-500 font-bold transition items-center px-4 py-2 rounded-full hover:bg-orange-50 border border-transparent hover:border-orange-200">
-                    <i class="fa-solid fa-crown mr-2"></i> Khu vực Leader
+                    <i class="fa-solid fa-crown mr-2"></i> Khu vực nhóm
                 </a>
             </nav>
 
@@ -85,7 +85,7 @@
                                     <div class="flex items-center"><i class="fa-solid fa-paper-plane w-5 text-center mr-2"></i> Đã ứng tuyển</div> 
                                     <span id="appliedCountMenu" class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                                 </a>
-                                <a href="javascript:void(0)" onclick="alert('Chuyển đến không gian làm việc nhóm...'); window.location.href='kanban.html'" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex justify-between items-center">
+                                <a href="javascript:void(0)" onclick="window.location.href='kanban.html'" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex justify-between items-center">
                                     <div class="flex items-center"><i class="fa-solid fa-users w-5 text-center mr-2"></i> Đang tham gia</div> 
                                     <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                                 </a>
@@ -431,6 +431,7 @@
         let savedProjects = []; 
         let customProjects = []; 
         let appliedProjects = []; 
+        let globalApps = []; // Khai báo globalApps để check trạng thái duyệt
 
         const defaultProjects = [
             {
@@ -511,12 +512,18 @@
             document.getElementById('dropdownProgressText').innerText = '100% - Hồ sơ xuất sắc';
             updateMenuVisibility(true);
 
+            // [MỚI] TẢI "BƯU ĐIỆN CHUNG" LÊN ĐỂ KIỂM TRA TRẠNG THÁI DUYỆT
+            const appsData = localStorage.getItem('globalApplications');
+            if(appsData) { globalApps = JSON.parse(appsData); }
+
             const savedApplied = localStorage.getItem('appliedProjectsData_' + loggedInUserId);
-            if(savedApplied) { appliedProjects = JSON.parse(savedApplied); } else { appliedProjects = []; }
+            if(savedApplied) { appliedProjects = JSON.parse(savedApplied); } 
+            else { appliedProjects = []; }
             updateAppliedMenuCount();
 
             const savedHearts = localStorage.getItem('savedProjectsData_' + loggedInUserId);
-            if(savedHearts) { savedProjects = JSON.parse(savedHearts); } else { savedProjects = []; }
+            if(savedHearts) { savedProjects = JSON.parse(savedHearts); } 
+            else { savedProjects = []; }
             updateSavedBadgeCount();
 
             const savedCustomProjects = localStorage.getItem('customProjectsData');
@@ -527,7 +534,7 @@
         });
 
         // ==========================================
-        // HIỂN THỊ CÁC DỰ ÁN VÀ LOGIC CHECK FULL
+        // HIỂN THỊ CÁC DỰ ÁN VÀ LOGIC CHECK ĐÃ DUYỆT
         // ==========================================
         function filterProjects() {
             const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -586,7 +593,9 @@
             const isSaved = savedProjects.some(saved => saved.title === p.title);
             const heartClass = isSaved ? 'active text-red-500' : 'text-gray-400 hover:text-red-500';
             const heartIcon = isSaved ? 'fa-solid' : 'fa-regular';
-            const isApplied = appliedProjects.includes(p.title);
+            
+            // [ĐÃ NÂNG CẤP] TÌM ĐƠN CỦA MÌNH TRONG BƯU ĐIỆN ĐỂ XEM LEADER ĐÃ DUYỆT CHƯA
+            const myApp = globalApps.find(app => app.projectId === p.title && app.applicantId === loggedInUserId);
             
             let currentMems = p.currentMembers || 1;
             let isFull = currentMems >= totalSlotsCount;
@@ -595,10 +604,20 @@
             if (isFull) { statusBadge = `<span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold flex items-center"><i class="fa-solid fa-lock mr-1"></i> Đã đóng form</span>`; }
 
             let actionButton = '';
+            
+            // TẠO NÚT BẤM DỰA VÀO TRẠNG THÁI "THỰC TẾ" TỪ LEADER
             if (p.isOwner && p.leaderName === loggedInUserName) {
                 actionButton = `<button onclick="window.location.href='kanban.html'" class="bg-white border-2 border-blue-600 text-blue-600 font-bold py-2 px-6 rounded-full text-sm hover:bg-blue-50 transition">Dự án của bạn</button>`;
-            } else if (isApplied) {
-                actionButton = `<button class="bg-gray-100 border border-gray-200 text-gray-400 font-bold py-2 px-6 rounded-full text-sm cursor-not-allowed shadow-inner" disabled><i class="fa-solid fa-check mr-1"></i> Chờ duyệt</button>`;
+            } else if (myApp) {
+                // Đã nộp đơn, check xem Leader phản hồi sao
+                if (myApp.status === 'pending') {
+                    actionButton = `<button class="bg-gray-100 border border-gray-200 text-gray-500 font-bold py-2 px-6 rounded-full text-sm cursor-not-allowed shadow-inner" disabled><i class="fa-solid fa-clock mr-1"></i> Chờ duyệt</button>`;
+                } else if (myApp.status === 'accepted') {
+                    // Nếu Leader bấm "Duyệt vào team" thì hiện nút xanh lá
+                    actionButton = `<button onclick="window.location.href='kanban.html'" class="bg-green-500 border border-green-600 text-white font-bold py-2 px-6 rounded-full text-sm shadow-md transition hover:bg-green-600"><i class="fa-solid fa-users mr-1"></i> Vào nhóm ngay</button>`;
+                } else if (myApp.status === 'rejected') {
+                    actionButton = `<button class="bg-red-50 border border-red-200 text-red-500 font-bold py-2 px-6 rounded-full text-sm cursor-not-allowed" disabled><i class="fa-solid fa-xmark mr-1"></i> Bị từ chối</button>`;
+                }
             } else if (isFull) {
                 actionButton = `<button class="bg-gray-100 border border-red-100 text-red-400 font-bold py-2 px-6 rounded-full text-sm cursor-not-allowed shadow-inner" disabled><i class="fa-solid fa-user-slash mr-1"></i> Đã đủ người</button>`;
             } else {
@@ -645,7 +664,7 @@
         }
 
         // ==========================================
-        // [ĐÃ NÂNG CẤP] GỬI ĐƠN VÀO HỘP THƯ CHUNG
+        // CÁC HÀM ỨNG TUYỂN VÀ ĐẾM CHỮ
         // ==========================================
         function toggleHeart(event, btn, title, category) {
             event.stopPropagation();
@@ -674,16 +693,14 @@
             const selectedRoleName = roleSelect.options[roleSelect.selectedIndex].text;
             const messageVal = document.getElementById('applyMessage').value;
 
-            // 1. LƯU VÀO DANH SÁCH CÁ NHÂN (Để hiện trạng thái "Chờ duyệt" cho acc này)
+            // LƯU CỤC BỘ (Giữ lại để đếm trên Menu)
             if(!appliedProjects.includes(currentProjectToApply)) {
                 appliedProjects.push(currentProjectToApply);
                 localStorage.setItem('appliedProjectsData_' + loggedInUserId, JSON.stringify(appliedProjects));
             }
 
-            // 2. GỬI VÀO "HỘP THƯ CHUNG" (Để Leader mở Kanban lên là thấy)
+            // GỬI VÀO "HỘP THƯ CHUNG"
             let allApps = JSON.parse(localStorage.getItem('globalApplications')) || [];
-            
-            // Check chống spam gửi trùng lặp
             const isAlreadySent = allApps.some(app => app.projectId === currentProjectToApply && app.applicantId === loggedInUserId);
             
             if(!isAlreadySent) {
@@ -695,9 +712,10 @@
                     role: selectedRoleName,
                     message: messageVal,
                     time: new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) + ' - ' + new Date().toLocaleDateString('vi-VN'),
-                    status: 'pending'
+                    status: 'pending' // Trạng thái mặc định
                 });
                 localStorage.setItem('globalApplications', JSON.stringify(allApps));
+                globalApps = allApps; // Cập nhật biến global trên trang
             }
 
             alert(`🚀 THÀNH CÔNG!\nHồ sơ của bạn (vị trí: ${selectedRoleName}) đã được gửi kèm lời nhắn!\nĐơn ứng tuyển đã bay thẳng tới hộp thư của Trưởng nhóm.`); 
@@ -707,11 +725,11 @@
 
             updateAppliedMenuCount();
             document.getElementById('bellBadge').classList.remove('hidden'); 
-            filterProjects(); 
+            filterProjects(); // Refresh UI để hiện nút "Chờ duyệt"
         }
 
         // ==========================================
-        // CÁC HÀM GIAO DIỆN CƠ BẢN (KHÔNG ĐỔI)
+        // CÁC HÀM GIAO DIỆN CƠ BẢN
         // ==========================================
         function updateLeaderVisibility() {
             const leaderBtn = document.getElementById('leaderAreaBtn');
@@ -755,7 +773,7 @@
         }
 
         // ==========================================
-        // LOGIC HIỂN THỊ MODAL CHI TIẾT VÀ APPLY
+        // LOGIC HIỂN THỊ MODAL CHI TIẾT
         // ==========================================
         const detailModal = document.getElementById('detailModal'); const detailContent = detailModal.querySelector('div.bg-white');
         
@@ -770,13 +788,23 @@
             if (project.roles && project.roles.length > 0) {
                 totalSlotsCount = project.roles.reduce((acc, curr) => acc + parseInt(curr.count), 0);
             }
+            
+            const myApp = globalApps.find(app => app.projectId === title && app.applicantId === loggedInUserId);
             let isFull = (project.currentMembers || 1) >= totalSlotsCount;
 
             const btnContainer = document.getElementById('detailActionBtnContainer');
+            
+            // [ĐÃ NÂNG CẤP] Cập nhật logic Modal y hệt như Card bên ngoài
             if (project && project.isOwner && project.leaderName === loggedInUserName) {
                 btnContainer.innerHTML = `<button onclick="window.location.href='kanban.html'" class="w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-3.5 rounded-xl hover:bg-blue-50 transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center">Dự án của bạn</button>`;
-            } else if (appliedProjects.includes(title)) {
-                btnContainer.innerHTML = `<button class="w-full bg-gray-100 text-gray-400 font-bold py-3.5 rounded-xl cursor-not-allowed shadow-inner uppercase tracking-wider text-sm flex items-center justify-center" disabled><i class="fa-solid fa-check mr-2"></i> Đang chờ duyệt</button>`;
+            } else if (myApp) {
+                if (myApp.status === 'pending') {
+                    btnContainer.innerHTML = `<button class="w-full bg-gray-100 text-gray-500 font-bold py-3.5 rounded-xl cursor-not-allowed shadow-inner uppercase tracking-wider text-sm flex items-center justify-center" disabled><i class="fa-solid fa-clock mr-2"></i> Đang chờ duyệt</button>`;
+                } else if (myApp.status === 'accepted') {
+                    btnContainer.innerHTML = `<button onclick="window.location.href='kanban.html'" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md uppercase tracking-wider text-sm flex items-center justify-center transition"><i class="fa-solid fa-users mr-2"></i> Vào nhóm ngay</button>`;
+                } else if (myApp.status === 'rejected') {
+                    btnContainer.innerHTML = `<button class="w-full bg-red-50 text-red-500 border border-red-200 font-bold py-3.5 rounded-xl cursor-not-allowed shadow-inner uppercase tracking-wider text-sm flex items-center justify-center" disabled><i class="fa-solid fa-xmark mr-2"></i> Bị từ chối</button>`;
+                }
             } else if (isFull) {
                 btnContainer.innerHTML = `<button class="w-full bg-gray-100 text-red-400 border border-red-100 font-bold py-3.5 rounded-xl cursor-not-allowed shadow-inner uppercase tracking-wider text-sm flex items-center justify-center" disabled><i class="fa-solid fa-user-slash mr-2"></i> Đã đủ người</button>`;
             } else {

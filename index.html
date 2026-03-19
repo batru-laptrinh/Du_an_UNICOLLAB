@@ -48,7 +48,6 @@
             <h2 data-i18n="auth_title" class="text-[22px] font-extrabold text-slate-500 text-center mb-8 tracking-wide">Hệ thống chung</h2>
 
             <form id="loginForm" onsubmit="handleLogin(event)">
-                
                 <div class="relative mb-5 sso-input bg-gray-50 border border-gray-200 rounded-full flex items-center">
                     <i class="fa-regular fa-user absolute left-5 text-blue-400 text-lg"></i>
                     <input type="text" id="loginAccount" data-placeholder="account" required autocomplete="off" placeholder="Mã SV / Tài khoản" class="w-full pl-12 pr-5 py-3.5 bg-transparent rounded-full text-sm font-bold text-gray-800 outline-none placeholder-gray-400">
@@ -82,6 +81,22 @@
                     </p>
                 </div>
             </form>
+
+            <div class="mt-8 pt-6 border-t border-gray-100 border-dashed">
+                <p class="text-[11px] text-gray-400 text-center uppercase tracking-wider font-bold mb-4">Truy cập nhanh (Dành cho báo cáo)</p>
+                <div class="flex flex-col space-y-3">
+                    <button onclick="demoLogin('student')" class="w-full flex justify-center items-center py-3 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-full text-sm font-bold transition border border-blue-100 shadow-sm">
+                        <i class="fa-solid fa-user-graduate mr-2"></i> Sinh Viên
+                    </button>
+                    <button onclick="demoLogin('leader')" class="w-full flex justify-center items-center py-3 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded-full text-sm font-bold transition border border-orange-100 shadow-sm">
+                        <i class="fa-solid fa-crown mr-2"></i> Trưởng Nhóm
+                    </button>
+                    <button onclick="demoLogin('teacher')" class="w-full flex justify-center items-center py-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-full text-sm font-bold transition border border-emerald-100 shadow-sm">
+                        <i class="fa-solid fa-chalkboard-user mr-2"></i> Giảng Viên
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -235,7 +250,6 @@
                 const key = el.getAttribute('data-placeholder');
                 if (placeholders[lang][key]) el.placeholder = placeholders[lang][key];
             });
-            // Fix text lỗi đa ngôn ngữ
             document.getElementById('errorText').innerText = lang === 'en' ? "Invalid account or password!" : "Sai tài khoản hoặc mật khẩu!";
         }
 
@@ -359,17 +373,14 @@
             
             let registeredUsers = JSON.parse(localStorage.getItem('unicollab_users')) || {};
             
-            // Chặn nếu trùng lặp (có kiểm tra case-sensitive)
             if(registeredUsers[idInput] || defaultUsers[idInput] || registeredUsers[idInput.toUpperCase()] || defaultUsers[idInput.toUpperCase()]) {
                 alert(`⚠️ Tài khoản ${idInput} đã tồn tại! Vui lòng Đăng nhập bằng tài khoản này.`);
                 return;
             }
             
-            // Lưu vào kho bằng đúng chữ thường / chữ hoa người dùng nhập
             registeredUsers[idInput] = { name: fullName, role: role, password: pass };
             localStorage.setItem('unicollab_users', JSON.stringify(registeredUsers));
 
-            // Lưu Session
             localStorage.setItem('userProfileData', JSON.stringify({ 
                 id: idInput, 
                 name: fullName, 
@@ -406,11 +417,10 @@
             
             let user = allUsers[accVal];
             
-            // Hỗ trợ thông minh: Nếu nhập 'sv002' mà trong kho đang lưu là 'SV002' thì vẫn cho qua
             if (!user) {
                 user = allUsers[accVal.toUpperCase()];
                 if(user) {
-                    accVal = accVal.toUpperCase(); // Gán lại ID chuẩn
+                    accVal = accVal.toUpperCase(); 
                 }
             }
             
@@ -423,7 +433,6 @@
             errorDiv.classList.add('hidden');
             errorDiv.classList.remove('flex');
 
-            // Cấp thẻ căn cước
             localStorage.setItem('userProfileData', JSON.stringify({ 
                 id: accVal, 
                 name: user.name, 
@@ -431,11 +440,35 @@
                 avatarBase64: user.avatarBase64 || ''
             }));
             
-            // Bẻ lái
             if (user.role === 'teacher') {
                 window.location.href = 'dashboard.html';
             } else {
                 window.location.href = 'matching.html';
+            }
+        }
+
+        // ==============================================================
+        // HÀM DEMO (VÀO THẲNG WEB) ĐÃ ĐƯỢC BỔ SUNG Ở ĐÂY 
+        // ==============================================================
+        function demoLogin(role) {
+            let userData = {};
+            if (role === 'student') {
+                userData = { id: 'SV_DEMO', name: 'Sinh viên Trải nghiệm', role: 'student' };
+                localStorage.setItem('userProfileData', JSON.stringify(userData));
+                window.location.href = 'matching.html';
+            } else if (role === 'leader') {
+                userData = { id: 'LD_DEMO', name: 'Leader Siêu Cấp', role: 'student' };
+                localStorage.setItem('userProfileData', JSON.stringify(userData));
+                let projects = JSON.parse(localStorage.getItem('customProjectsData')) || [];
+                if (!projects.some(p => p.leaderName === 'Leader Siêu Cấp')) {
+                    projects.unshift({ title: 'Dự án Báo cáo Đồ án UNICOLLAB', category: 'Công nghệ thông tin', leaderName: 'Leader Siêu Cấp', isOwner: true, status: 'approved', description: 'Dự án mẫu được tạo tự động để demo tính năng Trưởng nhóm.' });
+                    localStorage.setItem('customProjectsData', JSON.stringify(projects));
+                }
+                window.location.href = 'kanban.html';
+            } else if (role === 'teacher') {
+                userData = { id: 'GV_DEMO', name: 'Giảng viên Chấm thi', role: 'teacher' };
+                localStorage.setItem('userProfileData', JSON.stringify(userData));
+                window.location.href = 'dashboard.html';
             }
         }
 
